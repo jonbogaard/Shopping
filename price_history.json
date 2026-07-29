@@ -1,1 +1,16 @@
-{}
+{
+  "woolly_boxer": [
+    {
+      "date": "2026-07-29",
+      "best_price": 48.0,
+      "original_price": null,
+      "detail": [
+        48.0,
+        44.0,
+        44.0,
+        44.0,
+        15.0
+      ]
+    }
+  ]
+}
