@@ -6,6 +6,7 @@ import asyncio
 import json
 import os
 import sys
+import traceback
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -55,10 +56,11 @@ async def run_scraper(context, item: dict) -> dict:
         result = await scraper_fn(page, item)
         return result
     except Exception as e:
+        print(f"      Exception: {traceback.format_exc()}")
         return {
             "item_id": item["id"],
             "success": False,
-            "error": str(e),
+            "error": f"{type(e).__name__}: {str(e)[:200]}",
         }
     finally:
         await page.close()
@@ -77,19 +79,29 @@ async def main():
     async with async_playwright() as p:
         browser = await p.chromium.launch(
             headless=True,
-            args=["--no-sandbox", "--disable-dev-shm-usage"]
+            args=[
+                "--no-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-blink-features=AutomationControlled",
+            ]
         )
         context = await browser.new_context(
             user_agent=(
                 "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
                 "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/120.0.0.0 Safari/537.36"
+                "Chrome/126.0.0.0 Safari/537.36"
             ),
             viewport={"width": 1440, "height": 900},
+            java_script_enabled=True,
         )
 
+        # Add stealth: mask webdriver flag
+        await context.add_init_script("""
+            Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
+        """)
+
         for item in config["items"]:
-            print(f"   → Checking {item['name']}...", end=" ")
+            print(f"   → Checking {item['name']}...", end=" ", flush=True)
             result = await run_scraper(context, item)
             results.append(result)
 
