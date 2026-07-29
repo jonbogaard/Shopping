@@ -1,0 +1,45 @@
+name: Daily Price Check
+
+on:
+  schedule:
+    # Run at 7:00 AM UTC (midnight PDT) — you wake up to alerts
+    - cron: '0 7 * * *'
+  workflow_dispatch:  # Allows manual trigger from GitHub UI for testing
+
+jobs:
+  check-prices:
+    runs-on: ubuntu-latest
+    
+    env:
+      LEVI_EMAIL: ${{ secrets.LEVI_EMAIL }}
+      LEVI_PASSWORD: ${{ secrets.LEVI_PASSWORD }}
+      NIKE_EMAIL: ${{ secrets.NIKE_EMAIL }}
+      NIKE_PASSWORD: ${{ secrets.NIKE_PASSWORD }}
+      ALERT_EMAIL: ${{ secrets.ALERT_EMAIL }}
+      GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          playwright install chromium
+          playwright install-deps
+
+      - name: Run price checker
+        run: python main.py
+
+      - name: Commit updated price history
+        run: |
+          git config user.name "Price Tracker Bot"
+          git config user.email "bot@price-tracker.local"
+          git add price_history.json alert_state.json
+          git diff --staged --quiet || git commit -m "📊 Price update $(date -u +%Y-%m-%d)"
+          git push

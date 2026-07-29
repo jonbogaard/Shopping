@@ -1,0 +1,60 @@
+{
+  "items": [
+    {
+      "id": "woolly_boxer",
+      "name": "Woolly Merinoaire Boxer Brief",
+      "retailer": "woolly",
+      "url": "https://www.woolly.clothing/products/merinoaire-boxer-brief-backup-copy?variant=52764733079924",
+      "threshold": 40,
+      "size": null,
+      "notes": "Any color — 3 available"
+    },
+    {
+      "id": "uniqlo_airism_1",
+      "name": "Uniqlo Airism Underwear (Style 1)",
+      "retailer": "uniqlo",
+      "url": "https://www.uniqlo.com/us/en/products/E480997-000/00?colorDisplayCode=69&sizeDisplayCode=006",
+      "threshold": 9,
+      "size": null,
+      "notes": "Any color on sale"
+    },
+    {
+      "id": "uniqlo_airism_2",
+      "name": "Uniqlo Airism Underwear (Style 2)",
+      "retailer": "uniqlo",
+      "url": "https://www.uniqlo.com/us/en/products/E488035-000/00?colorDisplayCode=09&sizeDisplayCode=006",
+      "threshold": 9,
+      "size": null,
+      "notes": "Any color on sale"
+    },
+    {
+      "id": "levis_501",
+      "name": "Levi's 501 Original Selvedge",
+      "retailer": "levis",
+      "url": "https://www.levi.com/US/en_US/clothing/men/jeans/straight/501-original-selvedge-mens-jeans/p/005013722",
+      "threshold": 50,
+      "size": null,
+      "notes": "Login required to see checkout price"
+    },
+    {
+      "id": "levis_505",
+      "name": "Levi's 505 Regular Selvedge",
+      "retailer": "levis",
+      "url": "https://www.levi.com/US/en_US/clothing/men/jeans/straight/505TM-regular-selvedge-mens-jeans/p/005052976",
+      "threshold": 50,
+      "size": null,
+      "notes": "Login required to see checkout price"
+    },
+    {
+      "id": "nike_af1",
+      "name": "Nike Air Force 1 (Any, Size 12)",
+      "retailer": "nike",
+      "url": "https://www.nike.com/w/mens-air-force-1-shoes-5sj3yznik1zy7ok",
+      "threshold": 60,
+      "size": "12",
+      "notes": "Category page — monitor all AF1 variants in size 12"
+    }
+  ],
+  "alert_email": "jon.bogaard@gmail.com",
+  "reminder_cadence_days": 3
+}
