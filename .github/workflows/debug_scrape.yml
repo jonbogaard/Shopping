@@ -1,0 +1,40 @@
+name: Debug Scrape
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    
+    env:
+      LEVI_EMAIL: ${{ secrets.LEVI_EMAIL }}
+      LEVI_PASSWORD: ${{ secrets.LEVI_PASSWORD }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          playwright install chromium
+          playwright install-deps
+
+      - name: Run debug scrape
+        run: python debug_scrape.py
+
+      - name: Upload debug artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-output
+          path: debug_output/
+          retention-days: 3
