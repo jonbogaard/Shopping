@@ -4,6 +4,7 @@ Computes actual price including visible promo codes (e.g., "Extra 25% w/ DAYONE"
 No login required — promo math is done from displayed info.
 """
 import os
+from typing import Optional
 import re
 from playwright.async_api import Page
 
@@ -106,7 +107,7 @@ async def _apply_size_filter(page: Page, size: str) -> None:
         pass  # If filter fails, we get all sizes — less precise but still useful
 
 
-async def _extract_site_promo(page: Page) -> float | None:
+async def _extract_site_promo(page: Page) -> Optional[float]:
     """
     Look for a site/category-wide promo like 'Extra 25% w/ DAYONE'.
     Returns percentage as float (e.g., 25.0).
@@ -140,7 +141,7 @@ async def _scroll_to_load(page: Page, max_scrolls: int = 5) -> None:
         await page.wait_for_timeout(1500)
 
 
-async def _scrape_product_cards(page: Page, site_promo_pct: float | None) -> list:
+async def _scrape_product_cards(page: Page, site_promo_pct: Optional[float]) -> list:
     """Scrape all visible product cards and compute actual prices."""
     products = []
 

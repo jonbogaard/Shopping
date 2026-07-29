@@ -2,6 +2,7 @@
 Uniqlo scraper — clicks each color swatch and reads price per variant.
 No login required. Alerts if ANY color drops below threshold.
 """
+from typing import Optional
 import re
 from playwright.async_api import Page
 
@@ -78,7 +79,7 @@ async def scrape_uniqlo(page: Page, item: dict) -> dict:
     }
 
 
-async def _extract_uniqlo_price(page: Page) -> float | None:
+async def _extract_uniqlo_price(page: Page) -> Optional[float]:
     """Extract current price from Uniqlo product page."""
     selectors = [
         '[class*="price"] [class*="sale"]',
@@ -107,7 +108,7 @@ async def _extract_uniqlo_price(page: Page) -> float | None:
     return None
 
 
-async def _extract_uniqlo_original(page: Page) -> float | None:
+async def _extract_uniqlo_original(page: Page) -> Optional[float]:
     """Extract original/compare price."""
     selectors = [
         '[class*="price"] [class*="original"]',

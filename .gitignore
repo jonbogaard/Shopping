@@ -1,0 +1,10 @@
+# Credentials (local only)
+.env
+
+# Debug output
+debug_output/
+
+# Python
+__pycache__/
+*.pyc
+.venv/

@@ -1,10 +1,7 @@
 """
-Price Tracker — Main Orchestrator
-Runs all scrapers, updates price history, triggers alerts.
-
-Usage:
-    python main.py              # Run all items (local)
-    python main.py --cloud-only # Run only Nike + Uniqlo (GitHub Actions)
+Local scraper — runs on Mac via launchd.
+Handles Woolly + Levi's (sites that block GitHub Actions IPs).
+Sends alerts and updates price_history.json locally, then pushes to GitHub.
 """
 import asyncio
 import json
@@ -16,7 +13,8 @@ from pathlib import Path
 
 from playwright.async_api import async_playwright
 
-from scrapers import SCRAPER_MAP
+from scrapers.woolly import scrape_woolly
+from scrapers.levis import scrape_levis
 from alert import check_and_send_alerts
 
 
@@ -25,12 +23,18 @@ BASE_DIR = Path(__file__).parent
 CONFIG_PATH = BASE_DIR / "config.json"
 HISTORY_PATH = BASE_DIR / "price_history.json"
 ALERT_STATE_PATH = BASE_DIR / "alert_state.json"
+ENV_PATH = BASE_DIR / ".env"
 
-# Retailers that work from cloud (GitHub Actions)
-CLOUD_RETAILERS = {"nike", "uniqlo"}
 
-# Retailers that require local (residential IP)
-LOCAL_RETAILERS = {"woolly", "levis"}
+def load_env():
+    """Load environment variables from .env file."""
+    if ENV_PATH.exists():
+        with open(ENV_PATH) as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    key, value = line.split("=", 1)
+                    os.environ[key.strip()] = value.strip()
 
 
 def load_config() -> dict:
@@ -50,17 +54,8 @@ def save_history(history: dict) -> None:
         json.dump(history, f, indent=2)
 
 
-async def run_scraper(context, item: dict) -> dict:
-    """Run the appropriate scraper for an item."""
-    retailer = item["retailer"]
-    scraper_fn = SCRAPER_MAP.get(retailer)
-    if not scraper_fn:
-        return {
-            "item_id": item["id"],
-            "success": False,
-            "error": f"No scraper for retailer: {retailer}",
-        }
-
+async def run_scraper(context, scraper_fn, item: dict) -> dict:
+    """Run a scraper for an item."""
     page = await context.new_page()
     try:
         result = await scraper_fn(page, item)
@@ -77,34 +72,24 @@ async def run_scraper(context, item: dict) -> dict:
 
 
 async def main():
-    cloud_only = "--cloud-only" in sys.argv
-
+    load_env()
     config = load_config()
     history = load_history()
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
-    # Filter items based on mode
-    if cloud_only:
-        items = [i for i in config["items"] if i["retailer"] in CLOUD_RETAILERS]
-        mode_label = "Cloud (Nike + Uniqlo)"
-    else:
-        items = config["items"]
-        mode_label = "All items"
+    # Only run items that need local scraping (Woolly + Levi's)
+    local_items = [i for i in config["items"] if i["retailer"] in ("woolly", "levis")]
+    scraper_map = {"woolly": scrape_woolly, "levis": scrape_levis}
 
-    print(f"🛒 Price Tracker — {today}")
-    print(f"   Mode: {mode_label}")
-    print(f"   Checking {len(items)} items...\n")
+    print(f"🛒 Local Price Tracker — {today}")
+    print(f"   Checking {len(local_items)} items (Woolly + Levi's)...\n")
 
     results = []
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(
             headless=True,
-            args=[
-                "--no-sandbox",
-                "--disable-dev-shm-usage",
-                "--disable-blink-features=AutomationControlled",
-            ]
+            args=["--disable-blink-features=AutomationControlled"]
         )
         context = await browser.new_context(
             user_agent=(
@@ -113,15 +98,15 @@ async def main():
                 "Chrome/126.0.0.0 Safari/537.36"
             ),
             viewport={"width": 1440, "height": 900},
-            java_script_enabled=True,
         )
         await context.add_init_script("""
             Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
         """)
 
-        for item in items:
+        for item in local_items:
             print(f"   → Checking {item['name']}...", end=" ", flush=True)
-            result = await run_scraper(context, item)
+            scraper_fn = scraper_map[item["retailer"]]
+            result = await run_scraper(context, scraper_fn, item)
             results.append(result)
 
             if result.get("success"):
@@ -164,6 +149,12 @@ async def main():
         print(f"   📧 Sent {alerts_sent} alert(s)!")
     else:
         print(f"   No thresholds hit today.")
+
+    # Push to GitHub so PWA dashboard stays current
+    print(f"\n📤 Pushing to GitHub...")
+    os.system(f"cd {BASE_DIR} && git add price_history.json alert_state.json && "
+              f'git diff --staged --quiet || git commit -m "📊 Local price update {today}" && '
+              f"git push origin main 2>&1")
 
     print(f"\n✅ Done.")
 

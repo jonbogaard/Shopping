@@ -1,21 +1,19 @@
-name: Daily Price Check
+name: Daily Price Check (Cloud)
 
 on:
   schedule:
-    # Run at 7:00 AM UTC (midnight PDT) — you wake up to alerts
+    # Run at 7:00 AM UTC (midnight PDT)
     - cron: '0 7 * * *'
-  workflow_dispatch:  # Allows manual trigger from GitHub UI for testing
+  workflow_dispatch:
 
 permissions:
-  contents: write  # Required to push price_history.json back to repo
+  contents: write
 
 jobs:
   check-prices:
     runs-on: ubuntu-latest
     
     env:
-      LEVI_EMAIL: ${{ secrets.LEVI_EMAIL }}
-      LEVI_PASSWORD: ${{ secrets.LEVI_PASSWORD }}
       NIKE_EMAIL: ${{ secrets.NIKE_EMAIL }}
       NIKE_PASSWORD: ${{ secrets.NIKE_PASSWORD }}
       ALERT_EMAIL: ${{ secrets.ALERT_EMAIL }}
@@ -36,13 +34,13 @@ jobs:
           playwright install chromium
           playwright install-deps
 
-      - name: Run price checker
-        run: python main.py
+      - name: Run price checker (Nike + Uniqlo only)
+        run: python main.py --cloud-only
 
       - name: Commit updated price history
         run: |
           git config user.name "Price Tracker Bot"
           git config user.email "bot@price-tracker.local"
           git add price_history.json alert_state.json
-          git diff --staged --quiet || git commit -m "📊 Price update $(date -u +%Y-%m-%d)"
+          git diff --staged --quiet || git commit -m "📊 Cloud price update $(date -u +%Y-%m-%d)"
           git push
