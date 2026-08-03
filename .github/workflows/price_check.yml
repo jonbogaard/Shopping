@@ -2,7 +2,6 @@ name: Daily Price Check (Cloud)
 
 on:
   schedule:
-    # Run at 7:00 AM UTC (midnight PDT)
     - cron: '0 7 * * *'
   workflow_dispatch:
 
@@ -28,13 +27,33 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
           playwright install chromium
-          playwright install-deps
+          # Only install system deps if not cached
+          if [ ! -f ~/.cache/ms-playwright/.deps-installed ]; then
+            playwright install-deps chromium
+            touch ~/.cache/ms-playwright/.deps-installed
+          fi
 
-      - name: Run price checker (Nike + Uniqlo + Levi's deal check)
+      - name: Run price checker
         run: python main.py --cloud-only
 
       - name: Commit updated price history
