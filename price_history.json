@@ -2435,5 +2435,21 @@
         }
       ]
     }
+  ],
+  "levis_501": [
+    {
+      "date": "2026-08-03",
+      "type": "no_deal",
+      "total_discount_pct": 0,
+      "estimated_price": 150.0
+    }
+  ],
+  "levis_505": [
+    {
+      "date": "2026-08-03",
+      "type": "no_deal",
+      "total_discount_pct": 0,
+      "estimated_price": 150.0
+    }
   ]
 }
