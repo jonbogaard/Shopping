@@ -34,7 +34,7 @@ jobs:
           playwright install chromium
           playwright install-deps
 
-      - name: Run price checker (Nike + Uniqlo only)
+      - name: Run price checker (Nike + Uniqlo + Levi's deal check)
         run: python main.py --cloud-only
 
       - name: Commit updated price history
@@ -42,5 +42,5 @@ jobs:
           git config user.name "Price Tracker Bot"
           git config user.email "bot@price-tracker.local"
           git add price_history.json alert_state.json
-          git diff --staged --quiet || git commit -m "📊 Cloud price update $(date -u +%Y-%m-%d)"
+          git diff --staged --quiet || git commit -m "📊 Price update $(date -u +%Y-%m-%d)"
           git push

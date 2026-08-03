@@ -28,24 +28,6 @@
       "notes": "Any color on sale"
     },
     {
-      "id": "levis_501",
-      "name": "Levi's 501 Original Selvedge",
-      "retailer": "levis",
-      "url": "https://www.levi.com/US/en_US/clothing/men/jeans/straight/501-original-selvedge-mens-jeans/p/005013722",
-      "threshold": 50,
-      "size": null,
-      "notes": "Login required to see checkout price"
-    },
-    {
-      "id": "levis_505",
-      "name": "Levi's 505 Regular Selvedge",
-      "retailer": "levis",
-      "url": "https://www.levi.com/US/en_US/clothing/men/jeans/straight/505TM-regular-selvedge-mens-jeans/p/005052976",
-      "threshold": 50,
-      "size": null,
-      "notes": "Login required to see checkout price"
-    },
-    {
       "id": "nike_af1",
       "name": "Nike Air Force 1 (Any, Size 12)",
       "retailer": "nike",
@@ -55,6 +37,27 @@
       "notes": "Category page — monitor all AF1 variants in size 12"
     }
   ],
+  "levis": {
+    "items": [
+      {
+        "id": "levis_501",
+        "name": "Levi's 501 Original Selvedge",
+        "base_price": 150,
+        "threshold": 50,
+        "url": "https://www.levi.com/US/en_US/clothing/men/jeans/straight/501-original-selvedge-mens-jeans/p/005013722"
+      },
+      {
+        "id": "levis_505",
+        "name": "Levi's 505 Regular Selvedge",
+        "base_price": 150,
+        "threshold": 50,
+        "url": "https://www.levi.com/US/en_US/clothing/men/jeans/straight/505TM-regular-selvedge-mens-jeans/p/005052976"
+      }
+    ],
+    "alert_discount_threshold": 60,
+    "sources": ["slickdeals", "gmail"],
+    "notes": "Levi's blocks all automated access (Akamai). Using deal aggregators + email parsing instead."
+  },
   "alert_email": "jon.bogaard@gmail.com",
   "reminder_cadence_days": 3
 }
