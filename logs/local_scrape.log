@@ -1,0 +1,18 @@
+🛒 Local Price Tracker — 2026-08-17
+   Checking 1 items (Woolly + Levi's)...
+
+   → Checking Woolly Merinoaire Boxer Brief... ✅ $48.00
+
+📊 Updating price history...
+   Saved to /Users/jbogaard/Documents/shopping/price_history.json
+
+🔔 Checking alert thresholds...
+   No thresholds hit today.
+
+📤 Pushing to GitHub...
+[main fdb50a5] 📊 Local price update 2026-08-17
+ 1 file changed, 12 insertions(+)
+To https://github.com/jonbogaard/Shopping.git
+   da8555a..fdb50a5  main -> main
+
+✅ Done.

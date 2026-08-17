@@ -1,11 +1,21 @@
 """
 Levi's deal aggregator — checks Slickdeals for Levi's sales.
 Parses discount percentages and computes estimated prices.
-No bot protection issues — Slickdeals wants traffic.
+
+Slickdeals search results have this text structure per deal:
+  Line N:   Title (e.g., "Levi's Men's 501 Original Jeans $18.97")
+  Line N+1: "Found by [user] • [date/time]"
+  Line N+2: $sale_price
+  Line N+3: $original_price
+  Line N+4: "XX% off"
+  Line N+5: Store name
+  ...next deal
+
+We parse this text-line pattern directly (CSS selectors don't work
+reliably on their search results page).
 """
 from typing import Optional, List, Dict
 import re
-import time
 from datetime import datetime, timezone, timedelta
 from playwright.async_api import Page
 
@@ -24,9 +34,9 @@ async def scrape_slickdeals_levis(page: Page, items: List[dict]) -> List[dict]:
     """
     Search Slickdeals for recent Levi's deals.
     Parse discount percentages and compute estimated final prices.
-    Returns a list of deal results (one per deal found, not per SKU).
     """
-    search_url = "https://slickdeals.net/newsearch.php?q=levis+jeans&searcharea=deals&searchin=first&sort=newest"
+    # Broad search — just "levis" sorted by newest
+    search_url = "https://slickdeals.net/newsearch.php?q=levis&searcharea=deals&searchin=first&sort=newest"
 
     try:
         await page.goto(search_url, wait_until="domcontentloaded", timeout=30000)
@@ -39,25 +49,26 @@ async def scrape_slickdeals_levis(page: Page, items: List[dict]) -> List[dict]:
         }]
 
     body_text = await page.inner_text("body")
+    lines = [l.strip() for l in body_text.split("\n") if l.strip()]
 
-    # Parse deal listings
-    deals = await _extract_deals(page)
+    # Parse deals from text lines
+    deals = _parse_deal_lines(lines)
 
-    # Filter to last 48 hours and Levi's-relevant
-    recent_deals = [d for d in deals if d.get("is_recent") and d.get("is_levis")]
+    # Filter to recent (last 48 hours) and relevant to men's jeans/sitewide
+    recent_deals = [d for d in deals if d["is_recent"] and d["is_relevant"]]
 
     if not recent_deals:
         return [{
             "source": "slickdeals",
             "success": True,
             "deals_found": 0,
-            "message": "No recent Levi's deals on Slickdeals (last 48 hours)",
+            "message": "No recent relevant Levi's deals on Slickdeals (last 48 hours)",
         }]
 
-    # For each deal, compute estimated prices
+    # Build results
     results = []
     for deal in recent_deals:
-        discount_pct = deal.get("total_discount_pct", 0)
+        discount_pct = deal["discount_pct"]
         estimated_prices = {}
         for item_id, base_price in LEVIS_BASE_PRICES.items():
             est_price = round(base_price * (1 - discount_pct / 100), 2)
@@ -66,171 +77,171 @@ async def scrape_slickdeals_levis(page: Page, items: List[dict]) -> List[dict]:
         results.append({
             "source": "slickdeals",
             "success": True,
-            "deal_title": deal.get("title", ""),
+            "deal_title": deal["title"],
             "deal_url": deal.get("url", ""),
             "total_discount_pct": discount_pct,
-            "discount_details": deal.get("discount_details", ""),
+            "discount_details": f"{discount_pct}% off (${deal['sale_price']} from ${deal['original_price']})",
             "estimated_prices": estimated_prices,
-            "upvotes": deal.get("upvotes", 0),
-            "posted_date": deal.get("posted_date", ""),
+            "posted_date": deal["posted_date"],
+            "posted_by": deal["posted_by"],
+            "store": deal.get("store", ""),
             "alert_worthy": discount_pct >= DISCOUNT_ALERT_THRESHOLD,
         })
 
     return results
 
 
-async def _extract_deals(page: Page) -> List[Dict]:
-    """Extract deal listings from Slickdeals search results."""
+def _parse_deal_lines(lines: List[str]) -> List[Dict]:
+    """
+    Parse Slickdeals search results from text lines.
+    Pattern:
+      Line N:   Title
+      Line N+1: "Found by [user] • [date]"
+      Line N+2: $sale_price
+      Line N+3: $original_price
+      Line N+4: "XX% off"
+      Line N+5: Store
+    """
     deals = []
+    i = 0
 
-    # Slickdeals search results structure
-    cards = await page.query_selector_all(
-        '[class*="resultRow"], '
-        '[class*="dealCard"], '
-        '[class*="search-result"], '
-        'li[class*="deal"], '
-        '[data-type="deal"]'
-    )
+    while i < len(lines) - 4:
+        # Look for "Found by" pattern which anchors each deal
+        found_match = re.match(
+            r'Found by\s+(\S+)\s*[•·]\s*(.*)',
+            lines[i]
+        )
 
-    # If no structured cards found, fall back to link-based parsing
-    if not cards:
-        cards = await page.query_selector_all('a[href*="/f/"], a[href*="/deals/"]')
+        if found_match:
+            posted_by = found_match.group(1)
+            posted_date_str = found_match.group(2).strip()
 
-    for card in cards[:20]:  # Limit to top 20 results
-        try:
-            # Get title
-            title_el = await card.query_selector(
-                '[class*="title"], '
-                '[class*="dealTitle"], '
-                'a[class*="deal"]'
-            )
-            if title_el:
-                title = (await title_el.inner_text()).strip()
-            else:
-                title = (await card.inner_text()).strip()
-                title = title[:150]  # Truncate long text blocks
+            # Title is the line BEFORE "Found by"
+            title = lines[i - 1] if i > 0 else ""
 
-            if not title:
-                continue
+            # Sale price is the line AFTER "Found by"
+            sale_price = _parse_price(lines[i + 1]) if i + 1 < len(lines) else None
+            
+            # Original price is 2 lines after
+            original_price = _parse_price(lines[i + 2]) if i + 2 < len(lines) else None
+            
+            # Discount percentage is 3 lines after
+            discount_pct = 0
+            if i + 3 < len(lines):
+                pct_match = re.match(r'(\d+)%\s*off', lines[i + 3], re.IGNORECASE)
+                if pct_match:
+                    discount_pct = int(pct_match.group(1))
 
-            # Check if Levi's related
-            is_levis = bool(re.search(r'levi|levis|levi\'s', title, re.IGNORECASE))
-            if not is_levis:
-                # Check the card's full text
-                full_text = await card.inner_text()
-                is_levis = bool(re.search(r'levi|levis|levi\'s', full_text, re.IGNORECASE))
-
-            # Get URL
-            link_el = await card.query_selector('a[href]')
-            url = ""
-            if link_el:
-                href = await link_el.get_attribute("href")
-                if href:
-                    url = href if href.startswith("http") else f"https://slickdeals.net{href}"
-
-            # Get upvotes/thumbs
-            upvotes = 0
-            vote_el = await card.query_selector(
-                '[class*="vote"], [class*="thumb"], [class*="score"]'
-            )
-            if vote_el:
-                vote_text = await vote_el.inner_text()
-                vote_match = re.search(r'(\d+)', vote_text)
-                if vote_match:
-                    upvotes = int(vote_match.group(1))
-
-            # Parse discount percentages from title
-            discount_details = _parse_discounts(title)
-            total_discount = _compute_stacked_discount(discount_details)
+            # Store is 4 lines after
+            store = lines[i + 4] if i + 4 < len(lines) else ""
 
             # Check if recent (within 48 hours)
-            # Slickdeals shows relative times like "5h ago", "1d ago", "2d ago"
-            time_el = await card.query_selector(
-                '[class*="time"], [class*="date"], [class*="posted"], time'
-            )
-            is_recent = True  # Default to true for search results sorted by newest
-            posted_date = ""
-            if time_el:
-                time_text = await time_el.inner_text()
-                posted_date = time_text.strip()
-                # Check if it's older than 48 hours
-                if re.search(r'(\d+)\s*d', time_text):
-                    days = int(re.search(r'(\d+)\s*d', time_text).group(1))
-                    is_recent = days <= 2
-                elif re.search(r'(\d+)\s*w', time_text):
-                    is_recent = False
-                elif re.search(r'(\d+)\s*mo', time_text):
-                    is_recent = False
+            is_recent = _is_within_48_hours(posted_date_str)
 
-            deals.append({
-                "title": title,
-                "url": url,
-                "is_levis": is_levis,
-                "is_recent": is_recent,
-                "upvotes": upvotes,
-                "discount_details": discount_details,
-                "total_discount_pct": total_discount,
-                "posted_date": posted_date,
-            })
+            # Check if relevant (men's jeans, sitewide, or selvedge)
+            is_relevant = _is_relevant_deal(title)
 
-        except Exception:
-            continue
+            if title and discount_pct > 0:
+                deals.append({
+                    "title": title,
+                    "posted_by": posted_by,
+                    "posted_date": posted_date_str,
+                    "sale_price": sale_price,
+                    "original_price": original_price,
+                    "discount_pct": discount_pct,
+                    "store": store,
+                    "is_recent": is_recent,
+                    "is_relevant": is_relevant,
+                })
+
+            i += 5  # Skip past this deal block
+        else:
+            i += 1
 
     return deals
 
 
-def _parse_discounts(text: str) -> str:
-    """
-    Extract discount information from deal text.
-    Examples:
-      "50% off sale styles" → "50% off"
-      "40% off + extra 30% off" → "40% + 30% stacking"
-      "Extra 50% off sale" → "50% off sale items"
-    """
-    # Find all percentage mentions
-    pct_matches = re.findall(r'(\d+)%', text)
-    if not pct_matches:
-        return ""
+def _parse_price(text: str) -> Optional[float]:
+    """Extract dollar amount from text like '$19' or '$18.97'."""
+    match = re.search(r'\$?([\d,]+\.?\d*)', text)
+    if match:
+        try:
+            return float(match.group(1).replace(',', ''))
+        except ValueError:
+            pass
+    return None
 
-    # Check for stacking language
-    stacking_patterns = [
-        r'(\d+)%\s*off.*?(?:extra|additional|plus|\+)\s*(\d+)%',
-        r'(\d+)%.*?\+\s*(\d+)%',
-        r'extra\s+(\d+)%.*?(\d+)%',
+
+def _is_within_48_hours(date_str: str) -> bool:
+    """
+    Check if a Slickdeals date string is within 48 hours.
+    Formats: "Today 8:45 AM", "Yesterday 9:54 AM", "Aug 14, 2026 5:11 PM",
+             "1h ago", "3d ago"
+    """
+    date_str_lower = date_str.lower()
+
+    # "Today" or "Xh ago" or "Xm ago" — always recent
+    if "today" in date_str_lower:
+        return True
+    if re.search(r'(\d+)\s*[hm]\s*ago', date_str_lower):
+        return True
+
+    # "Yesterday" — within 48h
+    if "yesterday" in date_str_lower:
+        return True
+
+    # "Xd ago" — check if <= 2
+    day_match = re.search(r'(\d+)\s*d\s*ago', date_str_lower)
+    if day_match:
+        return int(day_match.group(1)) <= 2
+
+    # Explicit date like "Aug 14, 2026 5:11 PM"
+    try:
+        # Try parsing full date
+        for fmt in ["%b %d, %Y %I:%M %p", "%b %d, %Y"]:
+            try:
+                parsed = datetime.strptime(date_str.strip(), fmt)
+                now = datetime.now()
+                diff = now - parsed
+                return diff.total_seconds() <= 48 * 3600
+            except ValueError:
+                continue
+    except Exception:
+        pass
+
+    # If we can't parse, assume not recent (safer than false positive)
+    return False
+
+
+def _is_relevant_deal(title: str) -> bool:
+    """
+    Check if a deal is relevant to Jon's purchase (men's jeans, sitewide sales).
+    Filters out women's, kids, accessories, shoes.
+    """
+    title_lower = title.lower()
+
+    # EXCLUDE: women's, kids, girls
+    if any(w in title_lower for w in ["women", "girl", "kid", "boy's", "toddler"]):
+        return False
+
+    # INCLUDE: men's jeans, 501, 505, selvedge, sitewide, or generic "levi's" savings
+    include_patterns = [
+        r"men'?s.*jeans",
+        r"501",
+        r"505",
+        r"selvedge",
+        r"sitewide",
+        r"up to \d+%\s*off\s*levi",
+        r"levi'?s.*sale",
+        r"levi'?s.*savings",
+        r"men'?s.*levi",
     ]
-    for pattern in stacking_patterns:
-        match = re.search(pattern, text, re.IGNORECASE)
-        if match:
-            return f"{match.group(1)}% + {match.group(2)}% stacking"
+    for pattern in include_patterns:
+        if re.search(pattern, title_lower):
+            return True
 
-    # Single discount
-    if pct_matches:
-        return f"{pct_matches[0]}% off"
+    # Also include if it mentions men's anything (shirts, jackets still signal a sale)
+    if "men" in title_lower and ("levi" in title_lower):
+        return True
 
-    return ""
-
-
-def _compute_stacked_discount(discount_details: str) -> float:
-    """
-    Compute total effective discount from parsed discount string.
-    "50% off" → 50
-    "40% + 30% stacking" → 58 (1 - 0.6 * 0.7 = 0.58)
-    """
-    if not discount_details:
-        return 0
-
-    # Check for stacking
-    stack_match = re.search(r'(\d+)%\s*\+\s*(\d+)%', discount_details)
-    if stack_match:
-        d1 = int(stack_match.group(1)) / 100
-        d2 = int(stack_match.group(2)) / 100
-        # Stacking: price × (1-d1) × (1-d2), so total discount = 1 - (1-d1)(1-d2)
-        total = 1 - (1 - d1) * (1 - d2)
-        return round(total * 100, 1)
-
-    # Single discount
-    single_match = re.search(r'(\d+)%', discount_details)
-    if single_match:
-        return float(single_match.group(1))
-
-    return 0
+    return False
