@@ -8,3 +8,15 @@ debug_output/
 __pycache__/
 *.pyc
 .venv/
+
+# Excel temp files
+~$*
+*.xlsx
+!price_history.json
+
+# macOS
+.DS_Store
+
+# Chrome profile (Levi's persistent login - deprecated)
+.levi-chrome-profile/
+.shopping-chrome-profile/
