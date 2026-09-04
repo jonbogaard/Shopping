@@ -33,8 +33,9 @@
       "retailer": "nike",
       "url": "https://www.nike.com/w/mens-air-force-1-shoes-5sj3yznik1zy7ok",
       "threshold": 60,
+      "threshold_notify": 70,
       "size": "12",
-      "notes": "Category page — monitor all AF1 variants in size 12"
+      "notes": "Two-tier: notify at $70 (worth a look), buy-now at $60"
     }
   ],
   "levis": {

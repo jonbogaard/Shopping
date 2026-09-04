@@ -1,6 +1,10 @@
 """
 Alert system — checks thresholds, manages reminder cadence (day 1, 4, 7...),
 and sends email via Gmail SMTP.
+
+Supports two-tier alerts:
+  - threshold_notify: "worth a look" price (e.g., $70 for Nike)
+  - threshold: "buy now" price (e.g., $60 for Nike)
 """
 import json
 import os
@@ -19,8 +23,8 @@ REMINDER_CADENCE_DAYS = 3  # Alert on day 1, then day 4, 7, 10, etc.
 def check_and_send_alerts(config: dict, results: list, alert_state_path: Path) -> int:
     """
     For each successful scrape result:
-    - Compare best_price to threshold
-    - If below threshold, check alert cadence (don't spam)
+    - Compare best_price to threshold (buy now) and threshold_notify (worth a look)
+    - If below either threshold, check alert cadence (don't spam)
     - Send email if appropriate
     Returns number of alerts sent.
     """
@@ -40,20 +44,32 @@ def check_and_send_alerts(config: dict, results: list, alert_state_path: Path) -
             continue
 
         best_price = result["best_price"]
-        threshold = item["threshold"]
+        buy_threshold = item["threshold"]
+        notify_threshold = item.get("threshold_notify", buy_threshold)
 
-        if best_price <= threshold:
-            # Price is below threshold — should we alert?
-            if _should_alert(alert_state, item_id, today):
+        # Determine alert tier
+        if best_price <= buy_threshold:
+            tier = "BUY_NOW"
+        elif best_price <= notify_threshold:
+            tier = "WORTH_A_LOOK"
+        else:
+            tier = None
+
+        if tier:
+            # Price is below a threshold — should we alert?
+            if _should_alert(alert_state, item_id, today, tier):
                 alerts_to_send.append({
                     "item": item,
                     "result": result,
-                    "below_by": round(threshold - best_price, 2),
+                    "tier": tier,
+                    "below_buy_by": round(buy_threshold - best_price, 2) if tier == "BUY_NOW" else None,
+                    "below_notify_by": round(notify_threshold - best_price, 2),
                 })
                 # Update alert state
                 if item_id not in alert_state:
                     alert_state[item_id] = {}
                 alert_state[item_id]["last_alert_date"] = today
+                alert_state[item_id]["last_tier"] = tier
                 alert_state[item_id]["first_alert_date"] = alert_state[item_id].get(
                     "first_alert_date", today
                 )
@@ -61,7 +77,7 @@ def check_and_send_alerts(config: dict, results: list, alert_state_path: Path) -
                     "alert_count", 0
                 ) + 1
         else:
-            # Price is above threshold — reset alert state for this item
+            # Price is above all thresholds — reset alert state for this item
             if item_id in alert_state:
                 del alert_state[item_id]
 
@@ -72,16 +88,23 @@ def check_and_send_alerts(config: dict, results: list, alert_state_path: Path) -
     return len(alerts_to_send)
 
 
-def _should_alert(alert_state: dict, item_id: str, today: str) -> bool:
+def _should_alert(alert_state: dict, item_id: str, today: str, tier: str) -> bool:
     """
     Alert logic:
     - First time below threshold → alert immediately
+    - Tier upgrade (WORTH_A_LOOK → BUY_NOW) → alert immediately
     - After that → only alert every REMINDER_CADENCE_DAYS days
     """
     if item_id not in alert_state:
         return True  # First alert
 
+    last_tier = alert_state[item_id].get("last_tier", "")
     last_alert = alert_state[item_id].get("last_alert_date")
+
+    # If we crossed into a better tier, alert immediately
+    if tier == "BUY_NOW" and last_tier == "WORTH_A_LOOK":
+        return True
+
     if not last_alert:
         return True
 
@@ -99,13 +122,17 @@ def _send_alert_email(alerts: list) -> None:
         for alert in alerts:
             item = alert["item"]
             result = alert["result"]
-            print(f"      🏷️  {item['name']}: ${result['best_price']:.2f} "
-                  f"(threshold: ${item['threshold']})")
+            tier_label = "🔴 BUY NOW" if alert["tier"] == "BUY_NOW" else "🟡 WORTH A LOOK"
+            print(f"      {tier_label}  {item['name']}: ${result['best_price']:.2f}")
         return
 
-    # Build email content
-    subject = f"🛒 Price Alert — {len(alerts)} item{'s' if len(alerts) > 1 else ''} below threshold!"
-    
+    # Determine subject line based on tiers
+    has_buy_now = any(a["tier"] == "BUY_NOW" for a in alerts)
+    if has_buy_now:
+        subject = f"🔴 BUY NOW — {len(alerts)} item{'s' if len(alerts) > 1 else ''} hit buy-now price!"
+    else:
+        subject = f"🟡 Worth a Look — {len(alerts)} item{'s' if len(alerts) > 1 else ''} below notify threshold"
+
     body_lines = [
         "Your price tracker found deals:\n",
         "=" * 50,
@@ -114,25 +141,36 @@ def _send_alert_email(alerts: list) -> None:
     for alert in alerts:
         item = alert["item"]
         result = alert["result"]
+        tier = alert["tier"]
+        buy_threshold = item["threshold"]
+        notify_threshold = item.get("threshold_notify", buy_threshold)
+
+        if tier == "BUY_NOW":
+            tier_label = "🔴 BUY NOW"
+            tier_detail = f"${alert['below_buy_by']:.2f} below your buy-now price of ${buy_threshold}"
+        else:
+            tier_label = "🟡 WORTH A LOOK"
+            tier_detail = f"${alert['below_notify_by']:.2f} below your notify price of ${notify_threshold} (buy-now: ${buy_threshold})"
+
         body_lines.extend([
-            f"\n📦 {item['name']}",
-            f"   Price: ${result['best_price']:.2f} (threshold: ${item['threshold']})",
-            f"   Savings: ${alert['below_by']:.2f} below your target",
+            f"\n{tier_label}",
+            f"📦 {item['name']}",
+            f"   Price: ${result['best_price']:.2f}",
+            f"   {tier_detail}",
             f"   URL: {item['url']}",
         ])
 
         # Add detail for Nike (multiple variants)
-        if item["retailer"] == "nike" and isinstance(result.get("prices"), list):
-            below_threshold = [
+        if item.get("retailer") == "nike" and isinstance(result.get("prices"), list):
+            below = [
                 p for p in result["prices"]
-                if p.get("actual_price", 999) <= item["threshold"]
+                if isinstance(p, dict) and p.get("actual_price", 999) <= notify_threshold
             ]
-            if below_threshold:
-                body_lines.append(f"\n   Qualifying variants ({len(below_threshold)}):")
-                for p in below_threshold[:5]:  # Cap at 5
-                    promo_note = f" (extra {p['extra_discount_pct']:.0f}% w/ {p['promo_code']})" if p.get("promo_code") else ""
+            if below:
+                body_lines.append(f"\n   Qualifying variants ({len(below)}):")
+                for p in below[:5]:
                     body_lines.append(
-                        f"     • {p['name']}: ${p['actual_price']:.2f}{promo_note}"
+                        f"     • {p.get('name', '?')}: ${p['actual_price']:.2f}"
                     )
 
         body_lines.append("")
@@ -140,23 +178,27 @@ def _send_alert_email(alerts: list) -> None:
     body_lines.extend([
         "=" * 50,
         "\nThis is an automated alert from your Shopping Price Tracker.",
-        "Reminders will repeat every 3 days while the deal lasts.",
+        "Reminders repeat every 3 days while the deal lasts.",
+        "If the price drops to buy-now level, you'll get an immediate upgrade alert.",
     ])
 
     body = "\n".join(body_lines)
+    send_email(ALERT_EMAIL, subject, body, GMAIL_APP_PASSWORD)
 
-    # Send via Gmail SMTP
+
+def send_email(to_addr: str, subject: str, body: str, password: str) -> None:
+    """Send an email via Gmail SMTP."""
     msg = MIMEMultipart()
-    msg["From"] = ALERT_EMAIL
-    msg["To"] = ALERT_EMAIL
+    msg["From"] = to_addr
+    msg["To"] = to_addr
     msg["Subject"] = subject
     msg.attach(MIMEText(body, "plain"))
 
     try:
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(ALERT_EMAIL, GMAIL_APP_PASSWORD)
+            server.login(to_addr, password)
             server.send_message(msg)
-        print(f"   📧 Email sent to {ALERT_EMAIL}")
+        print(f"   📧 Email sent to {to_addr}")
     except Exception as e:
         print(f"   ❌ Email failed: {e}")
 
