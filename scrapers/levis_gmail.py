@@ -52,6 +52,8 @@ def scan_gmail_for_levis(hours_back: int = 48) -> List[Dict]:
             'FROM "levi"',
             'FROM "e.levi"',
             'FROM "email.levi"',
+            'FROM "mail.levi"',
+            'FROM "info@mail.levi.com"',
             'FROM "warehouse"',
             'SUBJECT "levi"',
         ]
