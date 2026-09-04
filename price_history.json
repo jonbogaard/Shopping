@@ -23,6 +23,18 @@
         44.0,
         15.0
       ]
+    },
+    {
+      "date": "2026-09-04",
+      "best_price": 48.0,
+      "original_price": null,
+      "detail": [
+        48.0,
+        44.0,
+        44.0,
+        44.0,
+        15.0
+      ]
     }
   ],
   "uniqlo_airism_1": [
@@ -256,6 +268,14 @@
           "price": 14.9
         }
       ]
+    },
+    {
+      "date": "2026-09-04",
+      "best_price": 9.9,
+      "original_price": null,
+      "detail": [
+        9.9
+      ]
     }
   ],
   "uniqlo_airism_2": [
@@ -488,6 +508,14 @@
           "color": "default",
           "price": 14.9
         }
+      ]
+    },
+    {
+      "date": "2026-09-04",
+      "best_price": 9.9,
+      "original_price": null,
+      "detail": [
+        9.9
       ]
     }
   ],
