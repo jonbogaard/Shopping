@@ -28,11 +28,12 @@ CONFIG_PATH = BASE_DIR / "config.json"
 HISTORY_PATH = BASE_DIR / "price_history.json"
 ALERT_STATE_PATH = BASE_DIR / "alert_state.json"
 
-# Retailers that work from cloud (GitHub Actions)
-CLOUD_RETAILERS = {"nike", "uniqlo"}
+# All retailers now run from cloud (GitHub Actions)
+# Woolly (Shopify) doesn't block cloud IPs — no need for local scraping
+CLOUD_RETAILERS = {"nike", "uniqlo", "woolly"}
 
-# Retailers that require local (residential IP)
-LOCAL_RETAILERS = {"woolly"}
+# No local-only retailers currently
+LOCAL_RETAILERS = set()
 
 
 def load_config() -> dict:

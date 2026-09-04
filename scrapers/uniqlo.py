@@ -1,126 +1,111 @@
 """
-Uniqlo scraper — clicks each color swatch and reads price per variant.
-No login required. Alerts if ANY color drops below threshold.
+Uniqlo scraper — uses Uniqlo's public product API.
+No bot detection on the API endpoint — direct HTTP request.
+
+API endpoint:
+  https://www.uniqlo.com/us/api/commerce/v5/en/products?productIds={PRODUCT_ID}&withPrices=true
+
+Returns base price and promo price per product.
 """
 from typing import Optional
 import re
+import json
 from playwright.async_api import Page
 
 
 async def scrape_uniqlo(page: Page, item: dict) -> dict:
     """
-    Navigate to Uniqlo product page, iterate through color options,
-    and return the lowest price found across all colors.
+    Fetch Uniqlo product price via their public commerce API.
+    Uses page.goto() to hit the API endpoint directly and read the JSON.
     """
-    url = item["url"]
-    await page.goto(url, wait_until="domcontentloaded", timeout=30000)
-    await page.wait_for_timeout(3000)  # Uniqlo is JS-heavy
+    item_id = item["id"]
+    url = item.get("url", "")
 
-    # Dismiss any popups (cookie consent, newsletter, etc.)
-    try:
-        close_btns = await page.query_selector_all(
-            '[class*="close"], [aria-label="Close"], button[class*="dismiss"]'
-        )
-        for btn in close_btns[:2]:
-            await btn.click()
-            await page.wait_for_timeout(500)
-    except Exception:
-        pass
-
-    prices_by_color = []
-
-    # Find color chip buttons
-    color_chips = await page.query_selector_all(
-        '#colorChip button, '
-        '[class*="color-chip"] button, '
-        '[data-test*="color"] button, '
-        '.fr-ec-color-chip__button'
-    )
-
-    if color_chips and len(color_chips) > 1:
-        for chip in color_chips:
-            try:
-                # Check if sold out
-                is_disabled = await chip.get_attribute("disabled")
-                classes = await chip.get_attribute("class") or ""
-                if is_disabled or "soldout" in classes.lower():
-                    continue
-
-                await chip.click()
-                await page.wait_for_timeout(1500)
-                price = await _extract_uniqlo_price(page)
-                if price:
-                    color_name = await chip.get_attribute("aria-label") or "unknown"
-                    prices_by_color.append({"color": color_name, "price": price})
-            except Exception:
-                continue
-    else:
-        # Single color or can't find chips — read page price
-        price = await _extract_uniqlo_price(page)
-        if price:
-            prices_by_color.append({"color": "default", "price": price})
-
-    if not prices_by_color:
+    product_id = _extract_product_id(url)
+    if not product_id:
         return {
-            "item_id": item["id"],
+            "item_id": item_id,
             "success": False,
-            "error": "Could not extract any prices",
-            "prices": [],
-            "best_price": None,
+            "error": f"Could not extract product ID from URL: {url[:80]}",
         }
 
-    best = min(p["price"] for p in prices_by_color)
-    return {
-        "item_id": item["id"],
-        "success": True,
-        "prices": prices_by_color,
-        "best_price": best,
-        "original_price": await _extract_uniqlo_original(page),
-    }
+    api_url = f"https://www.uniqlo.com/us/api/commerce/v5/en/products?productIds={product_id}&withPrices=true"
+
+    try:
+        # Navigate directly to the API URL — returns JSON as a page
+        response = await page.goto(api_url, wait_until="domcontentloaded", timeout=15000)
+
+        if response and response.status == 200:
+            body = await page.inner_text("body")
+            data = json.loads(body)
+        else:
+            status = response.status if response else "no response"
+            return {
+                "item_id": item_id,
+                "success": False,
+                "error": f"API returned status {status}",
+            }
+
+        items_data = data.get("result", {}).get("items", [])
+        if not items_data:
+            return {
+                "item_id": item_id,
+                "success": False,
+                "error": "No items returned from Uniqlo API",
+            }
+
+        product = items_data[0]
+        name = product.get("name", "")
+        prices_data = product.get("prices", {})
+
+        base_price = prices_data.get("base", {}).get("value")
+        promo_price = prices_data.get("promo", {}).get("value")
+
+        # Use promo price if available, otherwise base
+        best_price = promo_price if promo_price is not None else base_price
+
+        if best_price is None:
+            return {
+                "item_id": item_id,
+                "success": False,
+                "error": "No price found in API response",
+            }
+
+        # Build color/variant detail
+        colors = product.get("colors", [])
+        detail = []
+        for color in colors:
+            color_name = color.get("name", "unknown")
+            detail.append({
+                "color": color_name,
+                "price": float(best_price),
+            })
+
+        return {
+            "item_id": item_id,
+            "success": True,
+            "best_price": float(best_price),
+            "original_price": float(base_price) if base_price and base_price != promo_price else None,
+            "prices": [float(best_price)],
+            "detail": detail if detail else [{"color": "default", "price": float(best_price)}],
+            "product_name": name,
+        }
+
+    except Exception as e:
+        return {
+            "item_id": item_id,
+            "success": False,
+            "error": f"Uniqlo API error: {str(e)[:200]}",
+        }
 
 
-async def _extract_uniqlo_price(page: Page) -> Optional[float]:
-    """Extract current price from Uniqlo product page."""
-    selectors = [
-        '[class*="price"] [class*="sale"]',
-        '[class*="price-sale"]',
-        '.fr-ec-price-text--sale',
-        '[data-test="price-sale"]',
-        '[class*="price"] [class*="current"]',
-        '.fr-ec-price-text',
-    ]
-    for sel in selectors:
-        el = await page.query_selector(sel)
-        if el:
-            text = await el.inner_text()
-            match = re.search(r'\$?([\d,]+\.?\d*)', text)
-            if match:
-                return float(match.group(1).replace(',', ''))
-
-    # Broader fallback
-    price_area = await page.query_selector('[class*="price"]')
-    if price_area:
-        text = await price_area.inner_text()
-        # Find the first dollar amount
-        match = re.search(r'\$?([\d]+\.?\d{0,2})', text)
-        if match:
-            return float(match.group(1))
-    return None
-
-
-async def _extract_uniqlo_original(page: Page) -> Optional[float]:
-    """Extract original/compare price."""
-    selectors = [
-        '[class*="price"] [class*="original"]',
-        '[class*="price"] del',
-        '[class*="price"] s',
-        '.fr-ec-price-text--original',
-    ]
-    for sel in selectors:
-        el = await page.query_selector(sel)
-        if el:
-            text = await el.inner_text()
-            match = re.search(r'\$?([\d,]+\.?\d*)', text)
-            if match:
-                return float(match.group(1).replace(',', ''))
+def _extract_product_id(url: str) -> Optional[str]:
+    """
+    Extract Uniqlo product ID from URL.
+    URL format: https://www.uniqlo.com/us/en/products/E480997-000/00?...
+    Product ID: E480997-000
+    """
+    match = re.search(r'/products/(E\d+-\d+)', url)
+    if match:
+        return match.group(1)
     return None
