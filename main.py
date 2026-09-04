@@ -20,6 +20,7 @@ from scrapers import SCRAPER_MAP
 from scrapers.levis_deals import scrape_slickdeals_levis, DISCOUNT_ALERT_THRESHOLD
 from scrapers.levis_gmail import scan_gmail_for_levis
 from alert import check_and_send_alerts
+from health_check import check_health
 
 
 # Paths
@@ -294,6 +295,14 @@ async def main():
         print(f"   📧 Sent {alerts_sent} alert(s)!")
     else:
         print(f"   No thresholds hit today.")
+
+    # Health check — detect silent failures
+    print(f"\n🩺 Health check...")
+    health_alerts = check_health(results, levis_result)
+    if health_alerts:
+        print(f"   ⚠️  {health_alerts} scraper(s) failing — alert sent!")
+    else:
+        print(f"   All scrapers healthy.")
 
     print(f"\n✅ Done.")
 

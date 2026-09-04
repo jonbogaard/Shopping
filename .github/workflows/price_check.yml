@@ -60,6 +60,6 @@ jobs:
         run: |
           git config user.name "Price Tracker Bot"
           git config user.email "bot@price-tracker.local"
-          git add price_history.json alert_state.json
+          git add price_history.json alert_state.json health_state.json
           git diff --staged --quiet || git commit -m "📊 Price update $(date -u +%Y-%m-%d)"
           git push
