@@ -47,6 +47,18 @@
         44.0,
         15.0
       ]
+    },
+    {
+      "date": "2026-09-06",
+      "best_price": 48.0,
+      "original_price": null,
+      "detail": [
+        48.0,
+        44.0,
+        44.0,
+        44.0,
+        15.0
+      ]
     }
   ],
   "uniqlo_airism_1": [
@@ -296,6 +308,14 @@
       "detail": [
         9.9
       ]
+    },
+    {
+      "date": "2026-09-06",
+      "best_price": 9.9,
+      "original_price": null,
+      "detail": [
+        9.9
+      ]
     }
   ],
   "uniqlo_airism_2": [
@@ -540,6 +560,14 @@
     },
     {
       "date": "2026-09-05",
+      "best_price": 9.9,
+      "original_price": null,
+      "detail": [
+        9.9
+      ]
+    },
+    {
+      "date": "2026-09-06",
       "best_price": 9.9,
       "original_price": null,
       "detail": [
@@ -15967,6 +15995,365 @@
           "actual_price": 155.0
         }
       ]
+    },
+    {
+      "date": "2026-09-06",
+      "best_price": 100.97,
+      "original_price": null,
+      "detail": [
+        {
+          "name": "Nike Air Force 1 '07 LV8",
+          "listed_price": 125.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 125.0
+        },
+        {
+          "name": "Nike Air Force 1 '07 LV8",
+          "listed_price": 125.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 125.0
+        },
+        {
+          "name": "Nike Air Force 1 '07 Edge",
+          "listed_price": 125.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 125.0
+        },
+        {
+          "name": "Nike Air Force 1 '07 Edge",
+          "listed_price": 125.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 125.0
+        },
+        {
+          "name": "Kobe Air Force 1 Low",
+          "listed_price": 125.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 125.0
+        },
+        {
+          "name": "Kobe Air Force 1 Low",
+          "listed_price": 125.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 125.0
+        },
+        {
+          "name": "Nike Air Force 1 '07 LX Vibram",
+          "listed_price": 140.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 140.0
+        },
+        {
+          "name": "Nike Air Force 1 '07 LX Vibram",
+          "listed_price": 140.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 140.0
+        },
+        {
+          "name": "Nike Air Force 1 '07 Patent Leather",
+          "listed_price": 125.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 125.0
+        },
+        {
+          "name": "Nike Air Force 1 '07 Patent Leather",
+          "listed_price": 125.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 125.0
+        },
+        {
+          "name": "Nike Air Force 1 Flyknit 2.0",
+          "listed_price": 125.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 125.0
+        },
+        {
+          "name": "Nike Air Force 1 Flyknit 2.0",
+          "listed_price": 125.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 125.0
+        },
+        {
+          "name": "Nike Air Force 1 LX",
+          "listed_price": 140.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 140.0
+        },
+        {
+          "name": "Nike Air Force 1 LX",
+          "listed_price": 140.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 140.0
+        },
+        {
+          "name": "Nike Air Force 1 '07 LV8",
+          "listed_price": 140.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 140.0
+        },
+        {
+          "name": "Nike Air Force 1 '07 LV8",
+          "listed_price": 140.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 140.0
+        },
+        {
+          "name": "Nike Air Force 1 Mid '07",
+          "listed_price": 125.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 125.0
+        },
+        {
+          "name": "Nike Air Force 1 Mid '07",
+          "listed_price": 125.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 125.0
+        },
+        {
+          "name": "Nike Air Force 1 Low Retro",
+          "listed_price": 100.97,
+          "original_price": 125.0,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 100.97
+        },
+        {
+          "name": "Nike Air Force 1 Low Retro",
+          "listed_price": 100.97,
+          "original_price": 125.0,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 100.97
+        },
+        {
+          "name": "Nike Air Force 1 '07",
+          "listed_price": 125.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 125.0
+        },
+        {
+          "name": "Nike Air Force 1 '07",
+          "listed_price": 125.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 125.0
+        },
+        {
+          "name": "Air Force 1 GORE-TEX Vibram",
+          "listed_price": 150.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 150.0
+        },
+        {
+          "name": "Air Force 1 GORE-TEX Vibram",
+          "listed_price": 150.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 150.0
+        },
+        {
+          "name": "Air Force 1 '07 x Doernbecher Freestyle \"Oli\"",
+          "listed_price": 120.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 120.0
+        },
+        {
+          "name": "Air Force 1 '07 x Doernbecher Freestyle \"Oli\"",
+          "listed_price": 120.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 120.0
+        },
+        {
+          "name": "NOCTA Air Force 1 Low",
+          "listed_price": 160.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 160.0
+        },
+        {
+          "name": "NOCTA Air Force 1 Low",
+          "listed_price": 160.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 160.0
+        },
+        {
+          "name": "Nike Air Force 1 Retro",
+          "listed_price": 130.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 130.0
+        },
+        {
+          "name": "Nike Air Force 1 Retro",
+          "listed_price": 130.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 130.0
+        },
+        {
+          "name": "Air Force 1 Low x Terror Squad",
+          "listed_price": 150.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 150.0
+        },
+        {
+          "name": "Air Force 1 Low x Terror Squad",
+          "listed_price": 150.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 150.0
+        },
+        {
+          "name": "Nike SB Air Force 1 x Yuto",
+          "listed_price": 125.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 125.0
+        },
+        {
+          "name": "Nike SB Air Force 1 x Yuto",
+          "listed_price": 125.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 125.0
+        },
+        {
+          "name": "Nike Air Force 1 '07 \"WNBA All-Star Weekend\"",
+          "listed_price": 125.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 125.0
+        },
+        {
+          "name": "Nike Air Force 1 '07 \"WNBA All-Star Weekend\"",
+          "listed_price": 125.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 125.0
+        },
+        {
+          "name": "Nike Air Force 1 Low Protro",
+          "listed_price": 150.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 150.0
+        },
+        {
+          "name": "Nike Air Force 1 Low Protro",
+          "listed_price": 150.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 150.0
+        },
+        {
+          "name": "Nike Air Force 1 Mid By You",
+          "listed_price": 145.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 145.0
+        },
+        {
+          "name": "Nike Air Force 1 Mid By You",
+          "listed_price": 145.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 145.0
+        },
+        {
+          "name": "Nike Air Force 1 Low By You",
+          "listed_price": 140.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 140.0
+        },
+        {
+          "name": "Nike Air Force 1 Low By You",
+          "listed_price": 140.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 140.0
+        },
+        {
+          "name": "Nike Air Force 1 High By You",
+          "listed_price": 155.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 155.0
+        },
+        {
+          "name": "Nike Air Force 1 High By You",
+          "listed_price": 155.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 155.0
+        }
+      ]
     }
   ],
   "levis_501": [
@@ -16161,6 +16548,20 @@
       "type": "no_deal",
       "total_discount_pct": 0,
       "estimated_price": 150.0
+    },
+    {
+      "date": "2026-09-06",
+      "type": "deal_event",
+      "total_discount_pct": 77,
+      "discount_details": "77% off ($17.0 from $75.0)",
+      "estimated_price": 34.5,
+      "confidence": "MEDIUM",
+      "sources": {
+        "slickdeals": true,
+        "gmail": false
+      },
+      "deal_title": "Levi's 514\u2122 Straight Men's Jeans (Select Colors/Sizes) $17.49",
+      "deal_url": ""
     }
   ],
   "levis_505": [
@@ -16355,6 +16756,20 @@
       "type": "no_deal",
       "total_discount_pct": 0,
       "estimated_price": 150.0
+    },
+    {
+      "date": "2026-09-06",
+      "type": "deal_event",
+      "total_discount_pct": 77,
+      "discount_details": "77% off ($17.0 from $75.0)",
+      "estimated_price": 34.5,
+      "confidence": "MEDIUM",
+      "sources": {
+        "slickdeals": true,
+        "gmail": false
+      },
+      "deal_title": "Levi's 514\u2122 Straight Men's Jeans (Select Colors/Sizes) $17.49",
+      "deal_url": ""
     }
   ]
 }
