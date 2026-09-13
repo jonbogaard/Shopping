@@ -1,14 +1,14 @@
 {
   "uniqlo_airism_1": {
     "first_failure": "2026-09-12",
-    "consecutive_days": 1,
+    "consecutive_days": 2,
     "last_error": "Uniqlo API error: 'NoneType' object has no attribute 'get'",
-    "alerted": false
+    "alerted": true
   },
   "uniqlo_airism_2": {
     "first_failure": "2026-09-12",
-    "consecutive_days": 1,
+    "consecutive_days": 2,
     "last_error": "Uniqlo API error: 'NoneType' object has no attribute 'get'",
-    "alerted": false
+    "alerted": true
   }
 }
