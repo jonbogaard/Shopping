@@ -1,4 +1,4 @@
-const CACHE_NAME = 'beer-money-202609142211';
+const CACHE_NAME = 'beer-money-202609142213';
 const ASSETS = ['./index.html'];
 
 self.addEventListener('install', e => {
