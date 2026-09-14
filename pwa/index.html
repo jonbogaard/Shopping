@@ -36,6 +36,8 @@ html, body {
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   overflow: hidden;
+  padding: 0;
+  padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) 0;
 }
 
 /* ========== APP SHELL ========== */
@@ -96,8 +98,9 @@ html, body {
   display: flex;
   justify-content: space-around;
   align-items: center;
-  height: var(--tab-height);
-  padding-bottom: var(--safe-bottom);
+  min-height: var(--tab-height);
+  padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  padding-top: 6px;
   background: #111;
   border-top: 1px solid var(--card-border);
   flex-shrink: 0;
