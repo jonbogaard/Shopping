@@ -1,0 +1,2061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0D0D0D">
+<title>Beer Money</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+/* ========== CSS RESET + VARIABLES ========== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0D0D0D;
+  --card: #1A1A1A;
+  --card-border: #2A2A2A;
+  --accent: #F5A623;
+  --buy-now: #FF4D4D;
+  --worth-look: #F5A623;
+  --good: #4CD964;
+  --text: #FFFFFF;
+  --text-secondary: #8E8E93;
+  --text-dim: #555;
+  --tab-height: 60px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+html, body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+/* ========== APP SHELL ========== */
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-width: 430px;
+  margin: 0 auto;
+}
+
+/* ========== HEADER ========== */
+#header {
+  padding: 12px 20px 8px;
+  padding-top: calc(12px + env(safe-area-inset-top, 0px));
+  text-align: center;
+  flex-shrink: 0;
+}
+
+#header h1 {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--accent);
+}
+
+#header .subtitle {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* ========== TAB CONTENT AREA ========== */
+#content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 16px 16px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tab-panel {
+  display: none;
+  animation: fadeIn 0.25s ease;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ========== BOTTOM TAB BAR ========== */
+#tabbar {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: var(--tab-height);
+  padding-bottom: var(--safe-bottom);
+  background: #111;
+  border-top: 1px solid var(--card-border);
+  flex-shrink: 0;
+}
+
+.tab-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 10px;
+  font-weight: 500;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tab-btn .tab-icon { font-size: 22px; }
+.tab-btn.active { color: var(--accent); }
+.tab-btn:active { transform: scale(0.92); }
+
+/* ========== COMMON CARD STYLE ========== */
+.card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 12px;
+  transition: transform 0.15s ease;
+}
+
+.card:active { transform: scale(0.985); }
+
+/* ========== PLACEHOLDER CONTENT ========== */
+.placeholder {
+  color: var(--text-secondary);
+  text-align: center;
+  padding: 60px 20px;
+  font-size: 14px;
+}
+
+.placeholder .icon { font-size: 40px; margin-bottom: 12px; }
+
+/* ========== NIKE DEEP DIVE ========== */
+.nike-hero {
+  text-align: center;
+  padding: 20px 16px;
+}
+
+.nike-hero-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+.nike-hero-img {
+  width: 100%;
+  max-height: 180px;
+  object-fit: contain;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  background: #222;
+}
+
+.nike-hero-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.nike-hero-price {
+  font-size: 36px;
+  font-weight: 800;
+  margin-top: 4px;
+}
+
+.share-btn {
+  margin-top: 12px;
+  padding: 10px 24px;
+  background: var(--card-border);
+  color: var(--text);
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.share-btn:active { background: #3a3a3a; transform: scale(0.96); }
+
+.section-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.section-sublabel {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: -4px;
+  margin-bottom: 12px;
+}
+
+.timeframe-bar {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.tf-btn {
+  padding: 5px 14px;
+  background: var(--card-border);
+  border: none;
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.tf-btn.active { background: var(--accent); color: #000; }
+.tf-btn:active { transform: scale(0.93); }
+
+.chart-container {
+  position: relative;
+  height: 120px;
+}
+
+.chart-container canvas {
+  width: 100%;
+  height: 120px;
+}
+
+/* Distribution bars */
+.dist-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+
+.dist-label {
+  width: 70px;
+  flex-shrink: 0;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.dist-bar-track {
+  flex: 1;
+  height: 20px;
+  background: #222;
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 0 8px;
+}
+
+.dist-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.dist-count {
+  width: 28px;
+  text-align: right;
+  color: var(--text-secondary);
+  font-weight: 700;
+}
+
+/* Variant list */
+.variant-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--card-border);
+  cursor: pointer;
+}
+
+.variant-row:last-child { border-bottom: none; }
+.variant-row:active { opacity: 0.7; }
+
+.variant-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  max-width: 65%;
+}
+
+.variant-prices {
+  text-align: right;
+}
+
+.variant-actual {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.variant-listed {
+  font-size: 11px;
+  color: var(--text-dim);
+  text-decoration: line-through;
+}
+
+/* ========== LEVI'S TAB ========== */
+.levis-stats {
+  display: flex;
+  justify-content: space-around;
+  text-align: center;
+}
+
+.levis-stat-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.levis-stat-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+
+.tf-btn-l {
+  padding: 5px 12px;
+  background: var(--card-border);
+  border: none;
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.tf-btn-l.active { background: var(--accent); color: #000; }
+.tf-btn-l:active { transform: scale(0.93); }
+
+.deal-event-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.deal-event-row:last-child { border-bottom: none; }
+
+.deal-event-date { font-size: 12px; color: var(--text-secondary); width: 70px; }
+.deal-event-title { font-size: 13px; color: var(--text); flex: 1; margin: 0 10px; }
+.deal-event-pct { font-size: 16px; font-weight: 800; color: var(--good); }
+.deal-event-no { color: var(--text-dim); font-size: 12px; font-style: italic; }
+
+/* ========== SYSTEM / FORMS ========== */
+.scraper-row {
+  display: flex;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--card-border);
+  font-size: 13px;
+}
+
+.scraper-row:last-child { border-bottom: none; }
+.scraper-dot { font-size: 16px; margin-right: 10px; }
+.scraper-name { flex: 1; font-weight: 500; }
+.scraper-ago { color: var(--text-secondary); font-size: 11px; }
+.scraper-warn { color: #F5A623; font-size: 11px; margin-left: 6px; }
+
+.action-btn {
+  width: 100%;
+  padding: 12px;
+  background: var(--card-border);
+  color: var(--text);
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: all 0.15s;
+}
+
+.action-btn:active { background: #3a3a3a; transform: scale(0.97); }
+.action-btn.secondary { background: transparent; border: 1px solid var(--card-border); }
+
+.form-input {
+  width: 100%;
+  padding: 11px 14px;
+  background: #222;
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 14px;
+  margin-top: 8px;
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.form-input:focus { border-color: var(--accent); }
+
+.purchase-total {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--good);
+  margin-bottom: 10px;
+}
+
+.purchase-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--card-border);
+  font-size: 13px;
+}
+
+.purchase-row:last-child { border-bottom: none; }
+
+.purchase-saved {
+  color: var(--good);
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.idea-row {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--card-border);
+  position: relative;
+}
+
+.idea-row:last-child { border-bottom: none; }
+.idea-desc { font-size: 13px; font-weight: 500; }
+.idea-meta { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+.idea-delete {
+  position: absolute;
+  right: 0;
+  top: 10px;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* ========== BUY BANNER ========== */
+.buy-banner {
+  background: linear-gradient(135deg, #FF4D4D, #E0363F);
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  animation: bannerPulse 2s ease-in-out infinite;
+}
+
+.buy-banner-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  opacity: 0.9;
+}
+
+.buy-banner-product { font-size: 16px; font-weight: 700; margin-top: 4px; }
+.buy-banner-price { font-size: 24px; font-weight: 800; margin-top: 2px; }
+.buy-banner-threshold { font-size: 12px; font-weight: 400; opacity: 0.7; }
+
+@keyframes bannerPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,77,77,0.4); }
+  50% { box-shadow: 0 0 20px 4px rgba(255,77,77,0.2); }
+}
+
+/* Worth-a-look banner */
+.look-banner {
+  background: linear-gradient(135deg, #F5A623, #D4911E);
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin-bottom: 12px;
+  cursor: pointer;
+}
+
+.look-banner-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  opacity: 0.9;
+}
+
+.look-banner-product { font-size: 16px; font-weight: 700; margin-top: 4px; }
+.look-banner-price { font-size: 22px; font-weight: 800; margin-top: 2px; }
+
+/* ========== DASHBOARD STATS ROW ========== */
+.dash-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  padding: 14px 4px;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.dash-stat { text-align: center; flex: 1; }
+
+.dash-stat-value {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.dash-stat-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-dim);
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+  text-transform: uppercase;
+}
+
+/* ========== PRODUCT CARDS ========== */
+.product-card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  margin-bottom: 14px;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+  overflow: hidden;
+  position: relative;
+}
+
+.product-card:active { transform: scale(0.985); }
+
+/* Brand accent stripe on left edge */
+.product-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+}
+
+.product-card.brand-nike::before { background: #FF6B00; }
+.product-card.brand-uniqlo::before { background: #FF0000; }
+.product-card.brand-woolly::before { background: #2EC4B6; }
+
+.product-card-body { padding: 16px 16px 0 20px; }
+
+.product-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.product-card-left { max-width: 55%; }
+
+.product-card-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.product-card-retailer {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 3px;
+}
+
+.product-card-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  margin-top: 6px;
+}
+
+.badge-above { background: rgba(142,142,147,0.15); color: #8E8E93; }
+.badge-near { background: rgba(245,166,35,0.15); color: #F5A623; }
+.badge-below { background: rgba(76,217,100,0.15); color: #4CD964; }
+
+.product-card-price {
+  text-align: right;
+}
+
+.product-card-current {
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.product-card-threshold {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.product-card-trend {
+  display: inline-block;
+  font-size: 13px;
+  margin-left: 2px;
+}
+
+.price-above { color: var(--text); }
+.price-near { color: var(--worth-look); }
+.price-below { color: var(--good); }
+
+/* Nike hero card — larger */
+.product-card.card-nike {
+  background: linear-gradient(135deg, #1A1A1A 0%, #1F1710 100%);
+  border-color: #3A2E1A;
+}
+
+/* Product image in card */
+.product-card-img {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  border-radius: 10px;
+  background: #222;
+  flex-shrink: 0;
+}
+
+.product-card-header-with-img {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.product-card-header-right {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex: 1;
+  min-width: 0;
+}
+
+.nike-card-hero-row {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+  gap: 12px;
+}
+
+.nike-card-shoe-img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  border-radius: 10px;
+  background: #222;
+  flex-shrink: 0;
+}
+
+.nike-card-shoe-emoji {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  background: #222;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.nike-card-shoe-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.nike-card-cheapest-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.nike-card-cheapest-name {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nike-card-variant-count {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 3px;
+}
+
+/* Sparkline — BIGGER */
+.sparkline-container {
+  margin-top: 0;
+  position: relative;
+  height: 70px;
+  padding: 8px 16px 0 20px;
+}
+
+.sparkline-container canvas {
+  width: 100%;
+  height: 60px;
+}
+
+.sparkline-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  color: var(--text-dim);
+  margin-top: 2px;
+  padding: 0 0 10px;
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <!-- Header -->
+  <div id="header">
+    <h1>🍺 BEER MONEY</h1>
+    <div class="subtitle">Last updated: <span id="last-updated">—</span></div>
+  </div>
+
+  <!-- Tab Content -->
+  <div id="content">
+    <div id="tab-dashboard" class="tab-panel active">
+      <!-- Buy Now Banner (hidden by default) -->
+      <div id="buy-banner" class="buy-banner" style="display:none;" onclick="onBannerTap()">
+        <div class="buy-banner-label">BUY NOW</div>
+        <div class="buy-banner-product"><span id="banner-product"></span></div>
+        <div class="buy-banner-price">$<span id="banner-price"></span> <span class="buy-banner-threshold">(target: $<span id="banner-threshold"></span>)</span></div>
+      </div>
+
+      <!-- Worth-a-Look Banner (Nike $70 tier) -->
+      <div id="look-banner" class="look-banner" style="display:none;" onclick="onBannerTap()">
+        <div class="look-banner-label">WORTH A LOOK</div>
+        <div class="look-banner-product"><span id="look-banner-product"></span></div>
+        <div class="look-banner-price">$<span id="look-banner-price"></span></div>
+      </div>
+
+      <!-- Summary Stats Row -->
+      <div class="dash-stats">
+        <div class="dash-stat">
+          <div class="dash-stat-value" id="ds-items">—</div>
+          <div class="dash-stat-label">Tracking</div>
+        </div>
+        <div class="dash-stat">
+          <div class="dash-stat-value" id="ds-alerts">—</div>
+          <div class="dash-stat-label">At Target</div>
+        </div>
+        <div class="dash-stat">
+          <div class="dash-stat-value" id="ds-trend">—</div>
+          <div class="dash-stat-label">Best Trend</div>
+        </div>
+        <div class="dash-stat">
+          <div class="dash-stat-value" id="ds-deals">—</div>
+          <div class="dash-stat-label">Levi's Deals</div>
+        </div>
+      </div>
+
+      <!-- Product Cards -->
+      <div id="product-cards"></div>
+    </div>
+
+    <div id="tab-nike" class="tab-panel">
+      <!-- Hero -->
+      <div class="card nike-hero">
+        <div class="nike-hero-label">CHEAPEST AF1 TODAY</div>
+        <div id="nike-hero-img-wrap"></div>
+        <div id="nike-hero-name" class="nike-hero-name">—</div>
+        <div id="nike-hero-price" class="nike-hero-price">—</div>
+        <button id="nike-share-btn" class="share-btn" onclick="shareNike()">📤 Share</button>
+      </div>
+
+      <!-- Price History Chart -->
+      <div class="card">
+        <div class="section-label">PRICE HISTORY</div>
+        <div class="timeframe-bar">
+          <button class="tf-btn" onclick="setNikeTimeframe('1w',this)">1W</button>
+          <button class="tf-btn active" onclick="setNikeTimeframe('1m',this)">1M</button>
+          <button class="tf-btn" onclick="setNikeTimeframe('all',this)">ALL</button>
+        </div>
+        <div class="chart-container">
+          <canvas id="nike-history-chart"></canvas>
+        </div>
+      </div>
+
+      <!-- Price Distribution -->
+      <div class="card">
+        <div class="section-label">PRICE DISTRIBUTION TODAY</div>
+        <div class="section-sublabel"><span id="nike-variant-count">0</span> variants in Size 12</div>
+        <div id="nike-dist-bars"></div>
+      </div>
+
+      <!-- Variant List -->
+      <div class="card">
+        <div class="section-label">ALL AF1s IN YOUR SIZE</div>
+        <div id="nike-variant-list"></div>
+      </div>
+    </div>
+
+    <div id="tab-levis" class="tab-panel">
+      <!-- Summary Stats -->
+      <div class="card">
+        <div class="levis-stats">
+          <div class="levis-stat">
+            <div class="levis-stat-value" id="levis-last-deal">—</div>
+            <div class="levis-stat-label">Last Deal</div>
+          </div>
+          <div class="levis-stat">
+            <div class="levis-stat-value" id="levis-days-since">—</div>
+            <div class="levis-stat-label">Days Ago</div>
+          </div>
+          <div class="levis-stat">
+            <div class="levis-stat-value" id="levis-best-deal">—</div>
+            <div class="levis-stat-label">Best Deal</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Deal Timeline -->
+      <div class="card">
+        <div class="section-label">DEAL TIMELINE</div>
+        <div class="timeframe-bar">
+          <button class="tf-btn-l" onclick="setLevisTimeframe('1w',this)">1W</button>
+          <button class="tf-btn-l active" onclick="setLevisTimeframe('1m',this)">1M</button>
+          <button class="tf-btn-l" onclick="setLevisTimeframe('3m',this)">3M</button>
+          <button class="tf-btn-l" onclick="setLevisTimeframe('1y',this)">1Y</button>
+          <button class="tf-btn-l" onclick="setLevisTimeframe('all',this)">ALL</button>
+        </div>
+        <div class="chart-container" style="height:160px;">
+          <canvas id="levis-timeline-chart" style="height:160px;"></canvas>
+        </div>
+        <div class="section-sublabel" style="margin-top:8px;">Tap a deal dot for details</div>
+      </div>
+
+      <!-- Deal Detail (shown on tap) -->
+      <div id="levis-deal-detail" class="card" style="display:none;">
+        <div class="section-label">DEAL DETAIL</div>
+        <div id="levis-detail-content"></div>
+      </div>
+
+      <!-- Deal History List -->
+      <div class="card">
+        <div class="section-label">DEAL HISTORY</div>
+        <div id="levis-deal-list"></div>
+      </div>
+    </div>
+
+    <div id="tab-system" class="tab-panel">
+      <!-- Scraper Health -->
+      <div class="card">
+        <div class="section-label">SCRAPER STATUS</div>
+        <div id="scraper-health"></div>
+      </div>
+
+      <!-- Purchase Log -->
+      <div class="card">
+        <div class="section-label">PURCHASE LOG</div>
+        <div id="purchase-total" class="purchase-total"></div>
+        <div id="purchase-list"></div>
+        <button class="action-btn" onclick="showPurchaseForm()">💰 Log Purchase</button>
+      </div>
+
+      <!-- Purchase Form (hidden) -->
+      <div id="purchase-form" class="card" style="display:none;">
+        <div class="section-label">LOG A PURCHASE</div>
+        <select id="pf-product" class="form-input">
+          <option value="nike_af1">Nike Air Force 1</option>
+          <option value="uniqlo_airism_1">Uniqlo Airism (Style 1)</option>
+          <option value="uniqlo_airism_2">Uniqlo Airism (Style 2)</option>
+          <option value="woolly_boxer">Woolly Merinoaire</option>
+          <option value="levis_501">Levi's 501 Selvedge</option>
+          <option value="levis_505">Levi's 505 Selvedge</option>
+        </select>
+        <input type="number" id="pf-price" class="form-input" placeholder="Price paid ($)" step="0.01">
+        <input type="date" id="pf-date" class="form-input">
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <button class="action-btn" onclick="savePurchase()" style="flex:1;">Save</button>
+          <button class="action-btn secondary" onclick="hidePurchaseForm()" style="flex:1;">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Idea Inbox -->
+      <div class="card">
+        <div class="section-label">IDEA INBOX</div>
+        <div class="section-sublabel">Products to track later</div>
+        <div id="idea-list"></div>
+        <button class="action-btn" onclick="showIdeaForm()">➕ Add Idea</button>
+      </div>
+
+      <!-- Idea Form (hidden) -->
+      <div id="idea-form" class="card" style="display:none;">
+        <div class="section-label">NEW TRACKING IDEA</div>
+        <input type="text" id="if-desc" class="form-input" placeholder="Product description">
+        <input type="url" id="if-url" class="form-input" placeholder="URL (optional)">
+        <input type="number" id="if-target" class="form-input" placeholder="Target price (optional)" step="0.01">
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <button class="action-btn" onclick="saveIdea()" style="flex:1;">Save</button>
+          <button class="action-btn secondary" onclick="hideIdeaForm()" style="flex:1;">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Tab Bar -->
+  <div id="tabbar">
+    <button class="tab-btn active" data-tab="dashboard" onclick="switchTab('dashboard')">
+      <span class="tab-icon">🏠</span>
+      <span>Dashboard</span>
+    </button>
+    <button class="tab-btn" data-tab="nike" onclick="switchTab('nike')">
+      <span class="tab-icon">👟</span>
+      <span>Nike</span>
+    </button>
+    <button class="tab-btn" data-tab="levis" onclick="switchTab('levis')">
+      <span class="tab-icon">👖</span>
+      <span>Levi's</span>
+    </button>
+    <button class="tab-btn" data-tab="system" onclick="switchTab('system')">
+      <span class="tab-icon">⚙️</span>
+      <span>System</span>
+    </button>
+  </div>
+</div>
+
+<script>
+// ========== TAB NAVIGATION ==========
+const tabDrawn = { dashboard: true, nike: false, levis: false, system: false };
+
+function switchTab(tabId) {
+  // Haptic feedback
+  if (navigator.vibrate) navigator.vibrate(10);
+
+  // Update panels
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + tabId).classList.add('active');
+
+  // Update tab buttons
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+
+  // Scroll content to top
+  document.getElementById('content').scrollTop = 0;
+
+  // Draw charts on first visit (canvas needs to be visible to measure)
+  if (!tabDrawn[tabId]) {
+    tabDrawn[tabId] = true;
+    requestAnimationFrame(() => {
+      if (tabId === 'nike') {
+        const btn = document.querySelector('#tab-nike .tf-btn.active');
+        if (btn) setNikeTimeframe('1m', btn);
+      }
+      if (tabId === 'levis') {
+        const btn = document.querySelector('#tab-levis .tf-btn-l.active');
+        if (btn) setLevisTimeframe('1m', btn);
+      }
+    });
+  }
+}
+
+// ========== DATA (embedded at build time) ==========
+const PRICE_DATA = /*PRICE_DATA_PLACEHOLDER*/ {};
+const CONFIG = /*CONFIG_PLACEHOLDER*/ {};
+const BUILD_TIME = '/*BUILD_TIME_PLACEHOLDER*/';
+
+// Set last updated
+document.getElementById('last-updated').textContent = BUILD_TIME || 'Not yet built';
+
+// ========== DASHBOARD BUILDER ==========
+const PRODUCTS = [
+  { id: 'nike_af1', name: 'Nike Air Force 1', retailer: 'Nike', threshold: 60, thresholdNotify: 70, hasDetail: true,
+    image: 'https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/350e7f3a-979a-4520-a80e-0e0da9077a53/AIR+FORCE+1+%2707.png' },
+  { id: 'uniqlo_airism_1', name: 'Airism Underwear (Style 1)', retailer: 'Uniqlo', threshold: 9,
+    image: 'https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/480997/item/goods_69_480997.jpg' },
+  { id: 'uniqlo_airism_2', name: 'Airism Underwear (Style 2)', retailer: 'Uniqlo', threshold: 9,
+    image: 'https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/488035/item/goods_09_488035.jpg' },
+  { id: 'woolly_boxer', name: 'Merinoaire Boxer Brief', retailer: 'Woolly', threshold: 40,
+    image: 'https://www.woolly.clothing/cdn/shop/files/MerinoaireBoxerBrief-DeepNavy-Front.jpg?v=1706640425&width=600' },
+];
+
+function buildDashboard() {
+  checkBuyBanners();
+  buildProductCards();
+}
+
+function checkBuyBanners() {
+  const buyBanner = document.getElementById('buy-banner');
+  const lookBanner = document.getElementById('look-banner');
+
+  for (const prod of PRODUCTS) {
+    const entries = PRICE_DATA[prod.id] || [];
+    if (!entries.length) continue;
+    const latest = entries[entries.length - 1];
+    const price = latest.best_price;
+    if (price == null) continue;
+
+    // Buy now (at or below hard threshold)
+    if (price <= prod.threshold) {
+      document.getElementById('banner-product').textContent = prod.name;
+      document.getElementById('banner-price').textContent = price.toFixed(2);
+      document.getElementById('banner-threshold').textContent = prod.threshold;
+      buyBanner.style.display = 'block';
+      triggerConfetti();
+      return;
+    }
+
+    // Worth a look (Nike two-tier)
+    if (prod.thresholdNotify && price <= prod.thresholdNotify) {
+      document.getElementById('look-banner-product').textContent = prod.name;
+      document.getElementById('look-banner-price').textContent = '$' + price.toFixed(2);
+      lookBanner.style.display = 'block';
+      return;
+    }
+  }
+}
+
+function buildProductCards() {
+  const container = document.getElementById('product-cards');
+  container.innerHTML = '';
+
+  // Summary stats
+  let atTarget = 0;
+  let bestTrend = { name: '—', delta: 0 };
+  const levisDeals = (PRICE_DATA['levis_501'] || []).filter(e => e.type === 'deal_event').length;
+
+  for (const prod of PRODUCTS) {
+    const entries = PRICE_DATA[prod.id] || [];
+    if (!entries.length) continue;
+    const latest = entries[entries.length - 1];
+    const price = latest.best_price;
+    if (price == null) continue;
+
+    // Determine price status
+    let priceClass = 'price-above';
+    let badgeClass = 'badge-above';
+    let badgeText = 'TRACKING';
+    if (price <= prod.threshold) {
+      priceClass = 'price-below'; badgeClass = 'badge-below'; badgeText = 'BUY NOW'; atTarget++;
+    } else if (prod.thresholdNotify && price <= prod.thresholdNotify) {
+      priceClass = 'price-near'; badgeClass = 'badge-near'; badgeText = 'WORTH A LOOK';
+    } else if (price <= prod.threshold * 1.2) {
+      badgeClass = 'badge-near'; badgeText = 'GETTING CLOSE';
+    }
+
+    // Trend calculation (vs 7-day avg)
+    const recent7 = entries.slice(-7).map(e => e.best_price).filter(p => p != null);
+    const avg7 = recent7.length ? recent7.reduce((a, b) => a + b, 0) / recent7.length : price;
+    let trend = '→';
+    const trendDelta = ((price - avg7) / avg7) * 100;
+    if (trendDelta < -2) trend = '↓';
+    else if (trendDelta > 2) trend = '↑';
+
+    if (trendDelta < bestTrend.delta) {
+      bestTrend = { name: prod.retailer, delta: trendDelta };
+    }
+
+    // Brand class
+    const brandClass = prod.id.startsWith('nike') ? 'brand-nike' :
+                       prod.id.startsWith('uniqlo') ? 'brand-uniqlo' : 'brand-woolly';
+
+    // Nike-specific hero row
+    let nikeHeroRow = '';
+    if (prod.hasDetail && latest.detail && latest.detail.length && typeof latest.detail[0] === 'object') {
+      const cheapest = latest.detail.reduce((a, b) => a.actual_price < b.actual_price ? a : b);
+      const shoeVis = cheapest.image_url
+        ? `<img class="nike-card-shoe-img" src="${cheapest.image_url}" alt="${cheapest.name}" loading="lazy">`
+        : '<div class="nike-card-shoe-emoji">👟</div>';
+
+      nikeHeroRow = `
+        <div class="nike-card-hero-row">
+          ${shoeVis}
+          <div class="nike-card-shoe-info">
+            <div class="nike-card-cheapest-label">Cheapest today</div>
+            <div class="nike-card-cheapest-name">${cheapest.name || 'Air Force 1'}</div>
+            <div class="nike-card-variant-count">${latest.detail.length} variants in Size 12</div>
+          </div>
+        </div>`;
+    }
+
+    const isNike = prod.id === 'nike_af1';
+    const card = document.createElement('div');
+    card.className = `product-card ${brandClass}${isNike ? ' card-nike' : ''}`;
+    card.onclick = () => { if (isNike) switchTab('nike'); };
+
+    // Product image (non-Nike cards get a static image)
+    const imgSrc = (!isNike && prod.image) ? prod.image : null;
+    const imgTag = imgSrc ? `<img class="product-card-img" src="${imgSrc}" alt="${prod.name}" loading="lazy" onerror="this.style.display='none'">` : '';
+
+    card.innerHTML = `
+      <div class="product-card-body">
+        <div class="product-card-header-with-img">
+          ${imgTag}
+          <div class="product-card-header-right">
+            <div class="product-card-left">
+              <div class="product-card-name">${prod.name}</div>
+              <div class="product-card-retailer">${prod.retailer}</div>
+              <div class="product-card-badge ${badgeClass}">${badgeText}</div>
+            </div>
+            <div class="product-card-price">
+              <div class="product-card-current ${priceClass}">$${price.toFixed(2)}<span class="product-card-trend">${trend}</span></div>
+              <div class="product-card-threshold">Target: $${prod.threshold}</div>
+            </div>
+          </div>
+        </div>
+        ${nikeHeroRow}
+      </div>
+      <div class="sparkline-container">
+        <canvas id="spark-${prod.id}"></canvas>
+        <div class="sparkline-label">
+          <span>${entries[0].date.slice(5)}</span>
+          <span>${entries[entries.length - 1].date.slice(5)}</span>
+        </div>
+      </div>
+    `;
+
+    container.appendChild(card);
+    requestAnimationFrame(() => drawSparkline(prod.id, entries, prod.threshold, prod.thresholdNotify));
+  }
+
+  // Update summary stats
+  document.getElementById('ds-items').textContent = PRODUCTS.length;
+  document.getElementById('ds-alerts').textContent = atTarget;
+  document.getElementById('ds-trend').textContent = bestTrend.delta < -1 ? bestTrend.name + ' ↓' : 'Flat';
+  document.getElementById('ds-deals').textContent = levisDeals;
+}
+
+// ========== SPARKLINE RENDERER (color-shifting) ==========
+function getSparkColor(price, threshold, thresholdNotify) {
+  // Green at/below target, amber when close, red when far
+  if (price <= threshold) return { line: '#4CD964', r: 76, g: 217, b: 100 };
+  const upper = thresholdNotify || threshold * 1.3;
+  if (price <= upper) return { line: '#F5A623', r: 245, g: 166, b: 35 };
+  return { line: '#FF4D4D', r: 255, g: 77, b: 77 };
+}
+
+function drawSparkline(itemId, entries, threshold, thresholdNotify) {
+  const canvas = document.getElementById('spark-' + itemId);
+  if (!canvas) return;
+
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+
+  const w = rect.width;
+  const h = rect.height;
+  const prices = entries.map(e => e.best_price).filter(p => p != null);
+  if (prices.length < 2) return;
+
+  const min = Math.min(...prices, threshold) * 0.92;
+  const max = Math.max(...prices) * 1.05;
+  const range = max - min || 1;
+  const xStep = w / (prices.length - 1);
+
+  // Threshold line
+  const threshY = h - ((threshold - min) / range) * h;
+  ctx.strokeStyle = 'rgba(76,217,100,0.25)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([3, 3]);
+  ctx.beginPath();
+  ctx.moveTo(0, threshY);
+  ctx.lineTo(w, threshY);
+  ctx.stroke();
+
+  // Threshold label
+  ctx.fillStyle = 'rgba(76,217,100,0.4)';
+  ctx.font = '9px -apple-system, sans-serif';
+  ctx.textAlign = 'right';
+  ctx.fillText('$' + threshold, w - 2, threshY - 3);
+  ctx.textAlign = 'left';
+
+  // Worth-a-look threshold (Nike)
+  if (thresholdNotify) {
+    const notifyY = h - ((thresholdNotify - min) / range) * h;
+    ctx.strokeStyle = 'rgba(245,166,35,0.25)';
+    ctx.beginPath();
+    ctx.moveTo(0, notifyY);
+    ctx.lineTo(w, notifyY);
+    ctx.stroke();
+  }
+  ctx.setLineDash([]);
+
+  // Draw color-shifting price line using segments
+  ctx.lineWidth = 2.5;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+
+  for (let i = 1; i < prices.length; i++) {
+    const x0 = (i - 1) * xStep;
+    const y0 = h - ((prices[i - 1] - min) / range) * h;
+    const x1 = i * xStep;
+    const y1 = h - ((prices[i] - min) / range) * h;
+
+    // Color based on the segment's end price
+    const c = getSparkColor(prices[i], threshold, thresholdNotify);
+    ctx.strokeStyle = c.line;
+    ctx.beginPath();
+    ctx.moveTo(x0, y0);
+    ctx.lineTo(x1, y1);
+    ctx.stroke();
+  }
+
+  // Gradient fill based on current price color
+  const curColor = getSparkColor(prices[prices.length - 1], threshold, thresholdNotify);
+  const gradient = ctx.createLinearGradient(0, 0, 0, h);
+  gradient.addColorStop(0, `rgba(${curColor.r},${curColor.g},${curColor.b},0.12)`);
+  gradient.addColorStop(1, `rgba(${curColor.r},${curColor.g},${curColor.b},0)`);
+
+  ctx.beginPath();
+  for (let i = 0; i < prices.length; i++) {
+    const x = i * xStep;
+    const y = h - ((prices[i] - min) / range) * h;
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.lineTo((prices.length - 1) * xStep, h);
+  ctx.lineTo(0, h);
+  ctx.closePath();
+  ctx.fillStyle = gradient;
+  ctx.fill();
+
+  // Current price dot
+  const lastX = (prices.length - 1) * xStep;
+  const lastY = h - ((prices[prices.length - 1] - min) / range) * h;
+  ctx.beginPath();
+  ctx.arc(lastX, lastY, 4, 0, Math.PI * 2);
+  ctx.fillStyle = curColor.line;
+  ctx.fill();
+  ctx.strokeStyle = '#0D0D0D';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+}
+
+// ========== NIKE DEEP DIVE ==========
+let nikeTimeframe = 'all';
+
+function buildNikeTab() {
+  const entries = PRICE_DATA['nike_af1'] || [];
+  if (!entries.length) return;
+
+  const latest = entries[entries.length - 1];
+  const detail = latest.detail || [];
+
+  // Hero — cheapest shoe
+  if (detail.length && typeof detail[0] === 'object') {
+    const cheapest = detail.reduce((a, b) => a.actual_price < b.actual_price ? a : b);
+    document.getElementById('nike-hero-name').textContent = cheapest.name || 'Air Force 1';
+    document.getElementById('nike-hero-price').textContent = '$' + cheapest.actual_price.toFixed(2);
+
+    const imgWrap = document.getElementById('nike-hero-img-wrap');
+    if (cheapest.image_url) {
+      imgWrap.innerHTML = `<img class="nike-hero-img" src="${cheapest.image_url}" alt="${cheapest.name}">`;
+    } else {
+      imgWrap.innerHTML = '<div style="font-size:64px;margin:10px 0;">👟</div>';
+    }
+
+    document.getElementById('nike-variant-count').textContent = detail.length;
+    buildNikeDistribution(detail);
+    buildNikeVariantList(detail);
+  } else {
+    document.getElementById('nike-hero-price').textContent = '$' + (latest.best_price || 0).toFixed(2);
+  }
+
+  // Chart drawn on first tab visit (see switchTab)
+}
+
+function setNikeTimeframe(tf, btn) {
+  if (navigator.vibrate) navigator.vibrate(10);
+  nikeTimeframe = tf;
+  document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  const entries = PRICE_DATA['nike_af1'] || [];
+  let filtered = entries;
+  const now = new Date();
+
+  if (tf === '1w') {
+    const cutoff = new Date(now - 7 * 86400000).toISOString().slice(0, 10);
+    filtered = entries.filter(e => e.date >= cutoff);
+  } else if (tf === '1m') {
+    const cutoff = new Date(now - 30 * 86400000).toISOString().slice(0, 10);
+    filtered = entries.filter(e => e.date >= cutoff);
+  }
+
+  if (filtered.length < 2) filtered = entries;
+  drawNikeHistoryChart(filtered, tf);
+}
+
+function drawNikeHistoryChart(entries, tf) {
+  const canvas = document.getElementById('nike-history-chart');
+  if (!canvas) return;
+
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+
+  const w = rect.width;
+  const h = rect.height;
+  const pad = { top: 10, bottom: 20, left: 0, right: 0 };
+  const cw = w - pad.left - pad.right;
+  const ch = h - pad.top - pad.bottom;
+
+  const prices = entries.map(e => e.best_price).filter(p => p != null);
+  if (prices.length < 2) return;
+
+  const min = Math.min(...prices, 60) * 0.95;
+  const max = Math.max(...prices) * 1.05;
+  const range = max - min || 1;
+  const xStep = cw / (prices.length - 1);
+
+  ctx.clearRect(0, 0, w, h);
+
+  // $60 threshold line (buy now)
+  const y60 = pad.top + ch - ((60 - min) / range) * ch;
+  ctx.strokeStyle = 'rgba(255,77,77,0.35)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath(); ctx.moveTo(pad.left, y60); ctx.lineTo(w - pad.right, y60); ctx.stroke();
+  ctx.fillStyle = 'rgba(255,77,77,0.5)';
+  ctx.font = '10px -apple-system, sans-serif';
+  ctx.fillText('$60', pad.left + 2, y60 - 3);
+
+  // $70 threshold line (worth a look)
+  const y70 = pad.top + ch - ((70 - min) / range) * ch;
+  ctx.strokeStyle = 'rgba(245,166,35,0.35)';
+  ctx.beginPath(); ctx.moveTo(pad.left, y70); ctx.lineTo(w - pad.right, y70); ctx.stroke();
+  ctx.fillStyle = 'rgba(245,166,35,0.5)';
+  ctx.fillText('$70', pad.left + 2, y70 - 3);
+  ctx.setLineDash([]);
+
+  // Price line
+  ctx.strokeStyle = '#F5A623';
+  ctx.lineWidth = 2;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+
+  for (let i = 0; i < prices.length; i++) {
+    const x = pad.left + i * xStep;
+    const y = pad.top + ch - ((prices[i] - min) / range) * ch;
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // Gradient fill
+  const gradient = ctx.createLinearGradient(0, pad.top, 0, h);
+  gradient.addColorStop(0, 'rgba(245,166,35,0.15)');
+  gradient.addColorStop(1, 'rgba(245,166,35,0)');
+  ctx.lineTo(pad.left + (prices.length - 1) * xStep, pad.top + ch);
+  ctx.lineTo(pad.left, pad.top + ch);
+  ctx.closePath();
+  ctx.fillStyle = gradient;
+  ctx.fill();
+
+  // Current dot
+  const lx = pad.left + (prices.length - 1) * xStep;
+  const ly = pad.top + ch - ((prices[prices.length - 1] - min) / range) * ch;
+  ctx.beginPath(); ctx.arc(lx, ly, 4, 0, Math.PI * 2);
+  ctx.fillStyle = '#F5A623'; ctx.fill();
+  ctx.strokeStyle = '#0D0D0D'; ctx.lineWidth = 2; ctx.stroke();
+
+  // Date labels
+  ctx.fillStyle = '#555';
+  ctx.font = '10px -apple-system, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText(entries[0].date.slice(5), pad.left, h - 2);
+  ctx.textAlign = 'right';
+  ctx.fillText(entries[entries.length - 1].date.slice(5), w - pad.right, h - 2);
+}
+
+function buildNikeDistribution(detail) {
+  const buckets = [
+    { label: 'Under $60', min: 0, max: 60, color: '#4CD964' },
+    { label: '$60–70', min: 60, max: 70, color: '#F5A623' },
+    { label: '$70–80', min: 70, max: 80, color: '#FF9500' },
+    { label: '$80–90', min: 80, max: 90, color: '#FF6B6B' },
+    { label: '$90–100', min: 90, max: 100, color: '#FF4D4D' },
+    { label: '$100+', min: 100, max: 99999, color: '#8E8E93' },
+  ];
+
+  for (const b of buckets) {
+    b.count = detail.filter(d => d.actual_price >= b.min && d.actual_price < b.max).length;
+  }
+
+  const maxCount = Math.max(...buckets.map(b => b.count), 1);
+  const container = document.getElementById('nike-dist-bars');
+  container.innerHTML = '';
+
+  for (const b of buckets) {
+    const pct = (b.count / maxCount * 100).toFixed(0);
+    container.innerHTML += `
+      <div class="dist-row">
+        <div class="dist-label">${b.label}</div>
+        <div class="dist-bar-track">
+          <div class="dist-bar-fill" style="width:${pct}%;background:${b.color}"></div>
+        </div>
+        <div class="dist-count">${b.count}</div>
+      </div>`;
+  }
+}
+
+function buildNikeVariantList(detail) {
+  const sorted = [...detail].sort((a, b) => a.actual_price - b.actual_price);
+  const container = document.getElementById('nike-variant-list');
+  container.innerHTML = '';
+
+  for (const shoe of sorted) {
+    const listedStr = shoe.listed_price !== shoe.actual_price
+      ? `<div class="variant-listed">$${shoe.listed_price.toFixed(2)}</div>` : '';
+
+    let priceColor = 'var(--text)';
+    if (shoe.actual_price < 60) priceColor = 'var(--good)';
+    else if (shoe.actual_price < 70) priceColor = 'var(--accent)';
+
+    container.innerHTML += `
+      <div class="variant-row" onclick="window.open('https://www.nike.com/w?q=${encodeURIComponent(shoe.name)}','_blank')">
+        <div class="variant-name">${shoe.name}</div>
+        <div class="variant-prices">
+          <div class="variant-actual" style="color:${priceColor}">$${shoe.actual_price.toFixed(2)}</div>
+          ${listedStr}
+        </div>
+      </div>`;
+  }
+}
+
+// ========== LEVI'S DEAL TIMELINE ==========
+let levisDealDots = []; // store for tap detection
+
+function buildLevisTab() {
+  // Combine 501 + 505 data (they share the same deal events)
+  const entries = PRICE_DATA['levis_501'] || [];
+  if (!entries.length) return;
+
+  const deals = entries.filter(e => e.type === 'deal_event');
+  const today = new Date();
+
+  // Summary stats
+  if (deals.length) {
+    const lastDeal = deals[deals.length - 1];
+    document.getElementById('levis-last-deal').textContent = lastDeal.date.slice(5);
+    const daysSince = Math.floor((today - new Date(lastDeal.date)) / 86400000);
+    document.getElementById('levis-days-since').textContent = daysSince;
+    const bestPct = Math.max(...deals.map(d => d.total_discount_pct));
+    document.getElementById('levis-best-deal').textContent = bestPct + '%';
+  } else {
+    document.getElementById('levis-last-deal').textContent = 'None';
+    document.getElementById('levis-days-since').textContent = '—';
+    document.getElementById('levis-best-deal').textContent = '—';
+  }
+
+  // Chart drawn on first tab visit (see switchTab)
+  buildLevisDealList(entries);
+}
+
+function setLevisTimeframe(tf, btn) {
+  if (navigator.vibrate) navigator.vibrate(10);
+  document.querySelectorAll('.tf-btn-l').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  const entries = PRICE_DATA['levis_501'] || [];
+  const now = new Date();
+  let cutoff = null;
+
+  if (tf === '1w') cutoff = new Date(now - 7 * 86400000);
+  else if (tf === '1m') cutoff = new Date(now - 30 * 86400000);
+  else if (tf === '3m') cutoff = new Date(now - 90 * 86400000);
+  else if (tf === '1y') cutoff = new Date(now - 365 * 86400000);
+
+  let filtered = entries;
+  if (cutoff) {
+    const cutStr = cutoff.toISOString().slice(0, 10);
+    filtered = entries.filter(e => e.date >= cutStr);
+  }
+  if (filtered.length < 2) filtered = entries;
+  drawLevisTimeline(filtered, tf);
+}
+
+function drawLevisTimeline(entries, tf) {
+  const canvas = document.getElementById('levis-timeline-chart');
+  if (!canvas) return;
+
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+
+  const w = rect.width;
+  const h = rect.height;
+  const pad = { top: 15, bottom: 20, left: 0, right: 0 };
+  const cw = w - pad.left - pad.right;
+  const ch = h - pad.top - pad.bottom;
+
+  ctx.clearRect(0, 0, w, h);
+
+  if (entries.length < 2) return;
+
+  const xStep = cw / (entries.length - 1);
+
+  // 60% threshold line
+  const y60 = pad.top + ch - (60 / 100) * ch;
+  ctx.strokeStyle = 'rgba(76,217,100,0.3)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath(); ctx.moveTo(pad.left, y60); ctx.lineTo(w, y60); ctx.stroke();
+  ctx.fillStyle = 'rgba(76,217,100,0.5)';
+  ctx.font = '10px -apple-system, sans-serif';
+  ctx.fillText('60% alert', pad.left + 2, y60 - 3);
+  ctx.setLineDash([]);
+
+  // Baseline at 0%
+  const yBase = pad.top + ch;
+  ctx.strokeStyle = 'rgba(142,142,147,0.2)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(pad.left, yBase); ctx.lineTo(w, yBase); ctx.stroke();
+
+  // Deal dots + vertical spikes
+  levisDealDots = [];
+  for (let i = 0; i < entries.length; i++) {
+    const e = entries[i];
+    const x = pad.left + i * xStep;
+    const pct = e.total_discount_pct || 0;
+    const y = pad.top + ch - (pct / 100) * ch;
+
+    if (e.type === 'deal_event' && pct > 0) {
+      // Vertical spike
+      ctx.strokeStyle = pct >= 60 ? 'rgba(76,217,100,0.5)' : 'rgba(245,166,35,0.4)';
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(x, yBase); ctx.lineTo(x, y); ctx.stroke();
+
+      // Dot
+      const dotR = pct >= 60 ? 6 : 4;
+      ctx.beginPath(); ctx.arc(x, y, dotR, 0, Math.PI * 2);
+      ctx.fillStyle = pct >= 60 ? '#4CD964' : '#F5A623';
+      ctx.fill();
+      ctx.strokeStyle = '#0D0D0D'; ctx.lineWidth = 2; ctx.stroke();
+
+      // Percentage label
+      ctx.fillStyle = '#FFF';
+      ctx.font = 'bold 11px -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(pct + '%', x, y - 10);
+      ctx.textAlign = 'left';
+
+      levisDealDots.push({ x, y, r: dotR + 8, entry: e });
+    } else {
+      // Small dim dot for no-deal days
+      ctx.beginPath(); ctx.arc(x, yBase, 1.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#333'; ctx.fill();
+    }
+  }
+
+  // Date labels
+  ctx.fillStyle = '#555';
+  ctx.font = '10px -apple-system, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText(entries[0].date.slice(5), pad.left, h - 2);
+  ctx.textAlign = 'right';
+  ctx.fillText(entries[entries.length - 1].date.slice(5), w, h - 2);
+
+  // Tap handler
+  canvas.onclick = (evt) => {
+    const cRect = canvas.getBoundingClientRect();
+    const mx = (evt.clientX - cRect.left);
+    const my = (evt.clientY - cRect.top);
+    for (const dot of levisDealDots) {
+      if (Math.hypot(mx - dot.x, my - dot.y) < dot.r) {
+        showLevisDealDetail(dot.entry);
+        return;
+      }
+    }
+  };
+}
+
+function showLevisDealDetail(entry) {
+  if (navigator.vibrate) navigator.vibrate(15);
+  const panel = document.getElementById('levis-deal-detail');
+  const content = document.getElementById('levis-detail-content');
+
+  const sources = entry.sources || {};
+  const srcStr = `Slickdeals ${sources.slickdeals ? '✅' : '❌'} · Gmail ${sources.gmail ? '✅' : '❌'}`;
+
+  content.innerHTML = `
+    <div style="font-size:20px;font-weight:800;color:var(--good);margin-bottom:6px;">${entry.total_discount_pct}% off</div>
+    <div style="font-size:14px;margin-bottom:4px;">${entry.deal_title || 'Deal found'}</div>
+    <div style="font-size:12px;color:var(--text-secondary);margin-bottom:4px;">Est. price: $${(entry.estimated_price || 0).toFixed(2)}</div>
+    <div style="font-size:12px;color:var(--text-secondary);margin-bottom:4px;">${entry.date} · Confidence: ${entry.confidence || '—'}</div>
+    <div style="font-size:11px;color:var(--text-dim);">${srcStr}</div>
+    ${entry.deal_url ? `<a href="${entry.deal_url}" target="_blank" style="display:inline-block;margin-top:8px;color:var(--accent);font-size:13px;">View Deal →</a>` : ''}
+  `;
+  panel.style.display = 'block';
+}
+
+function buildLevisDealList(entries) {
+  const container = document.getElementById('levis-deal-list');
+  const deals = entries.filter(e => e.type === 'deal_event').reverse();
+
+  if (!deals.length) {
+    container.innerHTML = '<div class="deal-event-no">No deals recorded yet. Patience pays.</div>';
+    return;
+  }
+
+  container.innerHTML = '';
+  for (const d of deals) {
+    container.innerHTML += `
+      <div class="deal-event-row">
+        <div class="deal-event-date">${d.date.slice(5)}</div>
+        <div class="deal-event-title">${d.deal_title || 'Deal'}</div>
+        <div class="deal-event-pct">${d.total_discount_pct}%</div>
+      </div>`;
+  }
+}
+
+// ========== SHARE CARD ==========
+async function shareNike() {
+  if (navigator.vibrate) navigator.vibrate(20);
+
+  const entries = PRICE_DATA['nike_af1'] || [];
+  if (!entries.length) return;
+  const latest = entries[entries.length - 1];
+  const detail = latest.detail || [];
+  if (!detail.length || typeof detail[0] !== 'object') return;
+
+  const cheapest = detail.reduce((a, b) => a.actual_price < b.actual_price ? a : b);
+
+  // Build share card image with Canvas
+  const cvs = document.createElement('canvas');
+  cvs.width = 600; cvs.height = 340;
+  const ctx = cvs.getContext('2d');
+
+  // Background
+  ctx.fillStyle = '#0D0D0D';
+  ctx.fillRect(0, 0, 600, 340);
+
+  // Accent bar at top
+  ctx.fillStyle = '#F5A623';
+  ctx.fillRect(0, 0, 600, 4);
+
+  // Title
+  ctx.fillStyle = '#F5A623';
+  ctx.font = 'bold 14px -apple-system, sans-serif';
+  ctx.fillText('🍺 BEER MONEY', 24, 36);
+
+  // Shoe name
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = 'bold 22px -apple-system, sans-serif';
+  ctx.fillText(cheapest.name, 24, 80);
+
+  // Price
+  ctx.font = 'bold 48px -apple-system, sans-serif';
+  ctx.fillText('$' + cheapest.actual_price.toFixed(2), 24, 140);
+
+  // Original price strikethrough
+  if (cheapest.listed_price !== cheapest.actual_price) {
+    ctx.fillStyle = '#8E8E93';
+    ctx.font = '20px -apple-system, sans-serif';
+    const origText = 'was $' + cheapest.listed_price.toFixed(2);
+    ctx.fillText(origText, 24, 170);
+    const origW = ctx.measureText(origText).width;
+    ctx.strokeStyle = '#8E8E93';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(24, 164); ctx.lineTo(24 + origW, 164); ctx.stroke();
+  }
+
+  // Mini sparkline
+  const prices = entries.slice(-30).map(e => e.best_price).filter(p => p != null);
+  if (prices.length >= 2) {
+    const sx = 24, sy = 200, sw = 552, sh = 60;
+    const smin = Math.min(...prices) * 0.95;
+    const smax = Math.max(...prices) * 1.05;
+    const srange = smax - smin || 1;
+    const sxStep = sw / (prices.length - 1);
+
+    ctx.strokeStyle = '#F5A623';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let i = 0; i < prices.length; i++) {
+      const px = sx + i * sxStep;
+      const py = sy + sh - ((prices[i] - smin) / srange) * sh;
+      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+  }
+
+  // Footer
+  ctx.fillStyle = '#555';
+  ctx.font = '12px -apple-system, sans-serif';
+  ctx.fillText('Tracked by Beer Money · ' + latest.date, 24, 310);
+  ctx.fillText('nike.com', 24, 326);
+
+  // Convert to blob and share
+  try {
+    const blob = await new Promise(resolve => cvs.toBlob(resolve, 'image/png'));
+    if (navigator.share && navigator.canShare) {
+      const file = new File([blob], 'beer-money-deal.png', { type: 'image/png' });
+      const shareData = {
+        title: cheapest.name + ' — $' + cheapest.actual_price.toFixed(2),
+        text: cheapest.name + ' for $' + cheapest.actual_price.toFixed(2) + ' on Nike',
+        url: 'https://www.nike.com/w?q=' + encodeURIComponent(cheapest.name),
+        files: [file],
+      };
+      if (navigator.canShare(shareData)) {
+        await navigator.share(shareData);
+        return;
+      }
+    }
+    // Fallback — download the image
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'beer-money-deal.png'; a.click();
+    URL.revokeObjectURL(url);
+  } catch (e) {
+    console.log('Share cancelled or failed:', e);
+  }
+}
+
+// ========== SYSTEM TAB ==========
+const SCRAPERS = [
+  { id: 'nike_af1', name: 'Nike AF1' },
+  { id: 'uniqlo_airism_1', name: 'Uniqlo Airism 1' },
+  { id: 'uniqlo_airism_2', name: 'Uniqlo Airism 2' },
+  { id: 'woolly_boxer', name: 'Woolly' },
+  { id: 'levis_501', name: "Levi's (Slickdeals)" },
+  { id: 'levis_505', name: "Levi's (Gmail)" },
+];
+
+function buildSystemTab() {
+  const container = document.getElementById('scraper-health');
+  container.innerHTML = '';
+  const today = new Date();
+
+  for (const s of SCRAPERS) {
+    const entries = PRICE_DATA[s.id] || [];
+    const lastEntry = entries.length ? entries[entries.length - 1] : null;
+    const lastDate = lastEntry ? new Date(lastEntry.date) : null;
+    const daysSince = lastDate ? Math.floor((today - lastDate) / 86400000) : 999;
+
+    let dot = '🟢';
+    let warn = '';
+    if (daysSince >= 4) { dot = '🔴'; warn = `⚠️ ${daysSince}d silent`; }
+    else if (daysSince >= 2) { dot = '🟡'; warn = `⚠️ ${daysSince}d ago`; }
+
+    const agoStr = lastDate ? lastEntry.date : 'Never';
+
+    container.innerHTML += `
+      <div class="scraper-row">
+        <span class="scraper-dot">${dot}</span>
+        <span class="scraper-name">${s.name}</span>
+        <span class="scraper-ago">${agoStr}</span>
+        <span class="scraper-warn">${warn}</span>
+      </div>`;
+  }
+
+  buildPurchaseList();
+  buildIdeaList();
+}
+
+// ========== PURCHASE LOG ==========
+function getPurchases() {
+  try { return JSON.parse(localStorage.getItem('bm_purchases') || '[]'); }
+  catch { return []; }
+}
+
+function savePurchases(list) {
+  localStorage.setItem('bm_purchases', JSON.stringify(list));
+}
+
+function showPurchaseForm() {
+  if (navigator.vibrate) navigator.vibrate(10);
+  document.getElementById('pf-date').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('purchase-form').style.display = 'block';
+}
+
+function hidePurchaseForm() {
+  document.getElementById('purchase-form').style.display = 'none';
+}
+
+function savePurchase() {
+  const product = document.getElementById('pf-product').value;
+  const price = parseFloat(document.getElementById('pf-price').value);
+  const date = document.getElementById('pf-date').value;
+
+  if (!price || !date) { alert('Please fill in price and date'); return; }
+
+  // Find retail price at time of purchase
+  const entries = PRICE_DATA[product] || [];
+  const match = entries.find(e => e.date === date) || entries[entries.length - 1];
+  let retail = 0;
+  if (match) {
+    retail = match.best_price || match.estimated_price || 0;
+  }
+
+  const purchases = getPurchases();
+  purchases.push({ product, price, date, retail });
+  savePurchases(purchases);
+
+  hidePurchaseForm();
+  buildPurchaseList();
+  triggerFireworks();
+  if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
+}
+
+function buildPurchaseList() {
+  const purchases = getPurchases();
+  const list = document.getElementById('purchase-list');
+  const total = document.getElementById('purchase-total');
+
+  if (!purchases.length) {
+    total.textContent = '';
+    list.innerHTML = '<div style="color:var(--text-dim);font-size:12px;">No purchases logged yet.</div>';
+    return;
+  }
+
+  const totalSaved = purchases.reduce((sum, p) => sum + Math.max(0, p.retail - p.price), 0);
+  total.textContent = `Total saved: $${totalSaved.toFixed(2)}`;
+
+  const productNames = {
+    nike_af1: 'Nike AF1', uniqlo_airism_1: 'Uniqlo 1', uniqlo_airism_2: 'Uniqlo 2',
+    woolly_boxer: 'Woolly', levis_501: "501 Selvedge", levis_505: "505 Selvedge"
+  };
+
+  list.innerHTML = '';
+  for (const p of [...purchases].reverse()) {
+    const saved = Math.max(0, p.retail - p.price);
+    list.innerHTML += `
+      <div class="purchase-row">
+        <div>
+          <div style="font-weight:600;">${productNames[p.product] || p.product}</div>
+          <div style="font-size:11px;color:var(--text-secondary);">${p.date} · Paid $${p.price.toFixed(2)}</div>
+        </div>
+        <div class="purchase-saved">${saved > 0 ? '-$' + saved.toFixed(2) : '—'}</div>
+      </div>`;
+  }
+}
+
+// ========== IDEA INBOX ==========
+function getIdeas() {
+  try { return JSON.parse(localStorage.getItem('bm_ideas') || '[]'); }
+  catch { return []; }
+}
+
+function saveIdeas(list) {
+  localStorage.setItem('bm_ideas', JSON.stringify(list));
+}
+
+function showIdeaForm() {
+  if (navigator.vibrate) navigator.vibrate(10);
+  document.getElementById('idea-form').style.display = 'block';
+}
+
+function hideIdeaForm() {
+  document.getElementById('idea-form').style.display = 'none';
+}
+
+function saveIdea() {
+  const desc = document.getElementById('if-desc').value.trim();
+  if (!desc) { alert('Please add a description'); return; }
+
+  const url = document.getElementById('if-url').value.trim();
+  const target = document.getElementById('if-target').value;
+
+  const ideas = getIdeas();
+  ideas.push({
+    desc,
+    url: url || null,
+    target: target ? parseFloat(target) : null,
+    date: new Date().toISOString().slice(0, 10),
+  });
+  saveIdeas(ideas);
+
+  document.getElementById('if-desc').value = '';
+  document.getElementById('if-url').value = '';
+  document.getElementById('if-target').value = '';
+  hideIdeaForm();
+  buildIdeaList();
+  if (navigator.vibrate) navigator.vibrate(15);
+}
+
+function deleteIdea(idx) {
+  if (navigator.vibrate) navigator.vibrate(10);
+  const ideas = getIdeas();
+  ideas.splice(idx, 1);
+  saveIdeas(ideas);
+  buildIdeaList();
+}
+
+function buildIdeaList() {
+  const ideas = getIdeas();
+  const container = document.getElementById('idea-list');
+
+  if (!ideas.length) {
+    container.innerHTML = '<div style="color:var(--text-dim);font-size:12px;margin-bottom:6px;">No ideas yet. Spot something at the store? Save it here.</div>';
+    return;
+  }
+
+  container.innerHTML = '';
+  for (let i = 0; i < ideas.length; i++) {
+    const idea = ideas[i];
+    let meta = idea.date;
+    if (idea.target) meta += ` · Target: $${idea.target}`;
+    if (idea.url) meta += ' · 🔗';
+
+    container.innerHTML += `
+      <div class="idea-row">
+        <div class="idea-desc">${idea.desc}</div>
+        <div class="idea-meta">${meta}</div>
+        <button class="idea-delete" onclick="deleteIdea(${i})">✕</button>
+      </div>`;
+  }
+}
+
+// ========== CONFETTI + FIREWORKS ==========
+function createAnimCanvas() {
+  let c = document.getElementById('anim-canvas');
+  if (c) return c;
+  c = document.createElement('canvas');
+  c.id = 'anim-canvas';
+  c.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;';
+  document.body.appendChild(c);
+  return c;
+}
+
+function triggerConfetti() {
+  const canvas = createAnimCanvas();
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const colors = ['#F5A623', '#FF4D4D', '#4CD964', '#5AC8FA', '#FF9500', '#FF2D55'];
+  const pieces = [];
+  for (let i = 0; i < 80; i++) {
+    pieces.push({
+      x: Math.random() * canvas.width,
+      y: -10 - Math.random() * 100,
+      w: 6 + Math.random() * 6,
+      h: 4 + Math.random() * 4,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      vy: 2 + Math.random() * 3,
+      vx: (Math.random() - 0.5) * 3,
+      rot: Math.random() * 360,
+      rotV: (Math.random() - 0.5) * 10,
+    });
+  }
+
+  let frame = 0;
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let alive = false;
+    for (const p of pieces) {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.05;
+      p.rot += p.rotV;
+      if (p.y < canvas.height + 20) alive = true;
+
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot * Math.PI / 180);
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = Math.max(0, 1 - frame / 120);
+      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.restore();
+    }
+    frame++;
+    if (alive && frame < 150) requestAnimationFrame(draw);
+    else { ctx.clearRect(0, 0, canvas.width, canvas.height); canvas.remove(); }
+  }
+  requestAnimationFrame(draw);
+}
+
+function triggerFireworks() {
+  const canvas = createAnimCanvas();
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const cx = canvas.width / 2;
+  const cy = canvas.height * 0.35;
+  const colors = ['#F5A623', '#FF4D4D', '#4CD964', '#5AC8FA', '#FF9500'];
+  const sparks = [];
+
+  for (let i = 0; i < 60; i++) {
+    const angle = (Math.PI * 2 / 60) * i + (Math.random() - 0.5) * 0.3;
+    const speed = 3 + Math.random() * 4;
+    sparks.push({
+      x: cx, y: cy,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      life: 1,
+      decay: 0.012 + Math.random() * 0.01,
+      size: 2 + Math.random() * 2,
+    });
+  }
+
+  let frame = 0;
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let alive = false;
+    for (const s of sparks) {
+      s.x += s.vx;
+      s.y += s.vy;
+      s.vy += 0.06;
+      s.vx *= 0.99;
+      s.life -= s.decay;
+      if (s.life > 0) {
+        alive = true;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.size * s.life, 0, Math.PI * 2);
+        ctx.fillStyle = s.color;
+        ctx.globalAlpha = s.life;
+        ctx.fill();
+      }
+    }
+    frame++;
+    if (alive && frame < 120) requestAnimationFrame(draw);
+    else { ctx.clearRect(0, 0, canvas.width, canvas.height); canvas.remove(); }
+  }
+  requestAnimationFrame(draw);
+}
+function triggerConfetti() {
+  console.log('🎉 Confetti trigger — animation coming in Chunk 6');
+}
+
+function onBannerTap() {
+  if (navigator.vibrate) navigator.vibrate(20);
+}
+
+// ========== INIT ==========
+document.addEventListener('DOMContentLoaded', () => {
+  buildDashboard();
+  buildNikeTab();
+  buildLevisTab();
+  buildSystemTab();
+});
+
+// ========== SERVICE WORKER ==========
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+</script>
+
+</body>
+</html>

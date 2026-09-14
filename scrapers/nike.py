@@ -224,6 +224,22 @@ async def _scrape_product_cards(page: Page, site_promo_pct: Optional[float]) -> 
             else:
                 actual_price = listed_price
 
+            # Product image URL
+            image_url = None
+            img_el = await card.query_selector(
+                'img[class*="product"], '
+                'img[data-testid*="product"], '
+                'img[class*="card-img"], '
+                'img[src*="nike.com/a/images"]'
+            )
+            if img_el:
+                image_url = await img_el.get_attribute("src")
+                # Handle srcset — take the first URL if src is empty
+                if not image_url:
+                    srcset = await img_el.get_attribute("srcset")
+                    if srcset:
+                        image_url = srcset.split(",")[0].strip().split(" ")[0]
+
             products.append({
                 "name": name,
                 "listed_price": listed_price,
@@ -231,6 +247,7 @@ async def _scrape_product_cards(page: Page, site_promo_pct: Optional[float]) -> 
                 "extra_discount_pct": extra_discount,
                 "promo_code": promo_code,
                 "actual_price": actual_price,
+                "image_url": image_url,
             })
 
         except Exception:
