@@ -36,8 +36,8 @@ html, body {
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   overflow: hidden;
+  margin: 0;
   padding: 0;
-  padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) 0;
 }
 
 /* ========== APP SHELL ========== */
@@ -51,8 +51,8 @@ html, body {
 
 /* ========== HEADER ========== */
 #header {
-  padding: 12px 20px 8px;
-  padding-top: calc(54px + env(safe-area-inset-top, 0px));
+  padding: 8px 20px 8px;
+  padding-top: env(safe-area-inset-top, 20px);
   text-align: center;
   flex-shrink: 0;
 }
@@ -99,7 +99,7 @@ html, body {
   justify-content: space-around;
   align-items: center;
   min-height: var(--tab-height);
-  padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   padding-top: 6px;
   background: #111;
   border-top: 1px solid var(--card-border);
