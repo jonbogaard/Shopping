@@ -59,7 +59,8 @@ async def scrape_uniqlo(page: Page, item: dict) -> dict:
         prices_data = product.get("prices", {})
 
         base_price = prices_data.get("base", {}).get("value")
-        promo_price = prices_data.get("promo", {}).get("value")
+        promo_data = prices_data.get("promo")
+        promo_price = promo_data.get("value") if isinstance(promo_data, dict) else None
 
         # Use promo price if available, otherwise base
         best_price = promo_price if promo_price is not None else base_price
