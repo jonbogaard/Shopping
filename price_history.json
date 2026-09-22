@@ -239,6 +239,18 @@
         44.0,
         15.0
       ]
+    },
+    {
+      "date": "2026-09-22",
+      "best_price": 48.0,
+      "original_price": null,
+      "detail": [
+        48.0,
+        44.0,
+        44.0,
+        44.0,
+        15.0
+      ]
     }
   ],
   "uniqlo_airism_1": [
@@ -579,6 +591,14 @@
     },
     {
       "date": "2026-09-21",
+      "best_price": 7.9,
+      "original_price": null,
+      "detail": [
+        7.9
+      ]
+    },
+    {
+      "date": "2026-09-22",
       "best_price": 7.9,
       "original_price": null,
       "detail": [
@@ -932,6 +952,14 @@
     },
     {
       "date": "2026-09-21",
+      "best_price": 14.9,
+      "original_price": 14.9,
+      "detail": [
+        14.9
+      ]
+    },
+    {
+      "date": "2026-09-22",
       "best_price": 14.9,
       "original_price": 14.9,
       "detail": [
@@ -22197,6 +22225,373 @@
           "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/9db253d9-6220-4dd9-b504-308969208397/AIR+FORCE+1+HIGH+ESS+NBY+LEA.png"
         }
       ]
+    },
+    {
+      "date": "2026-09-22",
+      "best_price": 100.97,
+      "original_price": null,
+      "detail": [
+        {
+          "name": "Nike Air Force 1 LX",
+          "listed_price": 140.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 140.0,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/5b9d0189-b0f9-41db-9c0b-ce2aa6299aa9/AIR+FORCE+1+LUXE.png"
+        },
+        {
+          "name": "Nike Air Force 1 LX",
+          "listed_price": 140.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 140.0,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/5b9d0189-b0f9-41db-9c0b-ce2aa6299aa9/AIR+FORCE+1+LUXE.png"
+        },
+        {
+          "name": "Nike Air Force 1 '07 LV8",
+          "listed_price": 140.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 140.0,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/64e85e7a-854d-402f-b027-425691746fab/NIKE+AIR+FORCE+1+%2707+LV8.png"
+        },
+        {
+          "name": "Nike Air Force 1 '07 LV8",
+          "listed_price": 140.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 140.0,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/64e85e7a-854d-402f-b027-425691746fab/NIKE+AIR+FORCE+1+%2707+LV8.png"
+        },
+        {
+          "name": "Kobe Air Force 1 Low",
+          "listed_price": 125.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 125.0,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/a07c8c03-86dd-4813-aec3-898bcc3c3761/KOBE+AIR+FORCE+1+LOW.png"
+        },
+        {
+          "name": "Kobe Air Force 1 Low",
+          "listed_price": 125.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 125.0,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/a07c8c03-86dd-4813-aec3-898bcc3c3761/KOBE+AIR+FORCE+1+LOW.png"
+        },
+        {
+          "name": "Nike Air Force 1 '07 Edge",
+          "listed_price": 125.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 125.0,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/b5fe6c36-2d4d-4370-9423-cdd282017a14/AIR+FORCE+1+%2707+EDGE.png"
+        },
+        {
+          "name": "Nike Air Force 1 '07 Edge",
+          "listed_price": 125.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 125.0,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/b5fe6c36-2d4d-4370-9423-cdd282017a14/AIR+FORCE+1+%2707+EDGE.png"
+        },
+        {
+          "name": "Nike Air Force 1 '07 LX Vibram",
+          "listed_price": 140.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 140.0,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/759cacc7-c5fb-4aa6-9dc2-922f14223d66/AIR+FORCE+1+%2707+LX+VIBRAM.png"
+        },
+        {
+          "name": "Nike Air Force 1 '07 LX Vibram",
+          "listed_price": 140.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 140.0,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/759cacc7-c5fb-4aa6-9dc2-922f14223d66/AIR+FORCE+1+%2707+LX+VIBRAM.png"
+        },
+        {
+          "name": "Nike Air Force 1 '07 Patent Leather",
+          "listed_price": 125.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 125.0,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/7b644887-99ea-416c-8ae8-c081d07099fd/AIR+FORCE+1+%2707+PRM.png"
+        },
+        {
+          "name": "Nike Air Force 1 '07 Patent Leather",
+          "listed_price": 125.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 125.0,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/7b644887-99ea-416c-8ae8-c081d07099fd/AIR+FORCE+1+%2707+PRM.png"
+        },
+        {
+          "name": "Nike Air Force 1 Flyknit 2.0",
+          "listed_price": 125.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 125.0,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/sysjoe9calqxska4tjot/AIR+FORCE+1+FLYKNIT+2.0.png"
+        },
+        {
+          "name": "Nike Air Force 1 Flyknit 2.0",
+          "listed_price": 125.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 125.0,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/sysjoe9calqxska4tjot/AIR+FORCE+1+FLYKNIT+2.0.png"
+        },
+        {
+          "name": "Nike Air Force 1 Mid '07",
+          "listed_price": 125.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 125.0,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/0447d3b3-28d3-4ba3-a6d6-deb0b21558af/AIR+FORCE+1+MID+%2707.png"
+        },
+        {
+          "name": "Nike Air Force 1 Mid '07",
+          "listed_price": 125.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 125.0,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/0447d3b3-28d3-4ba3-a6d6-deb0b21558af/AIR+FORCE+1+MID+%2707.png"
+        },
+        {
+          "name": "Nike Air Force 1 Low Retro",
+          "listed_price": 100.97,
+          "original_price": 125.0,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 100.97,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/77997ab1-a23e-4364-89b9-4f0aef1c3331/AIR+FORCE+1+LOW+RETRO+QS.png"
+        },
+        {
+          "name": "Nike Air Force 1 Low Retro",
+          "listed_price": 100.97,
+          "original_price": 125.0,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 100.97,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/77997ab1-a23e-4364-89b9-4f0aef1c3331/AIR+FORCE+1+LOW+RETRO+QS.png"
+        },
+        {
+          "name": "Air Force 1 GORE-TEX Vibram",
+          "listed_price": 150.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 150.0,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/70990dd9-d79e-4f2d-8c98-dc50569ac5a6/AIR+FORCE+1+GTX+VIBRAM.png"
+        },
+        {
+          "name": "Air Force 1 GORE-TEX Vibram",
+          "listed_price": 150.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 150.0,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/70990dd9-d79e-4f2d-8c98-dc50569ac5a6/AIR+FORCE+1+GTX+VIBRAM.png"
+        },
+        {
+          "name": "Nike Air Force 1 Mid '07 GORE-TEX Vibram",
+          "listed_price": 180.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 180.0,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/9f051852-dc50-4737-893b-4e7080bc8da2/AIR+FORCE+1+MID+%2707+GTX+VIBRAM.png"
+        },
+        {
+          "name": "Nike Air Force 1 Mid '07 GORE-TEX Vibram",
+          "listed_price": 180.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 180.0,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/9f051852-dc50-4737-893b-4e7080bc8da2/AIR+FORCE+1+MID+%2707+GTX+VIBRAM.png"
+        },
+        {
+          "name": "NOCTA Air Force 1 Low",
+          "listed_price": 160.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 160.0,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/7ac1ba5d-28cc-4b41-96f5-ce16b7e070a3/AIR+FORCE+1+LOW+SP.png"
+        },
+        {
+          "name": "NOCTA Air Force 1 Low",
+          "listed_price": 160.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 160.0,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/7ac1ba5d-28cc-4b41-96f5-ce16b7e070a3/AIR+FORCE+1+LOW+SP.png"
+        },
+        {
+          "name": "Air Force 1 '07 x Doernbecher Freestyle \"Oli\"",
+          "listed_price": 120.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 120.0,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/e6f03a83-22f3-4ac1-8e85-efa8d4ae8c73/NIKE+AIR+FORCE+1+%2707+DB21.png"
+        },
+        {
+          "name": "Air Force 1 '07 x Doernbecher Freestyle \"Oli\"",
+          "listed_price": 120.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 120.0,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/e6f03a83-22f3-4ac1-8e85-efa8d4ae8c73/NIKE+AIR+FORCE+1+%2707+DB21.png"
+        },
+        {
+          "name": "Nike Air Force 1 '07 \"WNBA All-Star Weekend\"",
+          "listed_price": 100.97,
+          "original_price": 125.0,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 100.97,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/a15dbf0a-88a6-4be1-9e18-425fbc16ee8b/WMNS+AIR+FORCE+1+%2707.png"
+        },
+        {
+          "name": "Nike Air Force 1 '07 \"WNBA All-Star Weekend\"",
+          "listed_price": 100.97,
+          "original_price": 125.0,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 100.97,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/a15dbf0a-88a6-4be1-9e18-425fbc16ee8b/WMNS+AIR+FORCE+1+%2707.png"
+        },
+        {
+          "name": "Air Force 1 Low x Terror Squad",
+          "listed_price": 150.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 150.0,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/aea024af-c15b-4714-9f5e-5f428caf79f2/AIR+FORCE+1+LOW+TS.png"
+        },
+        {
+          "name": "Air Force 1 Low x Terror Squad",
+          "listed_price": 150.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 150.0,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/aea024af-c15b-4714-9f5e-5f428caf79f2/AIR+FORCE+1+LOW+TS.png"
+        },
+        {
+          "name": "Nike SB Air Force 1 x Yuto",
+          "listed_price": 125.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 125.0,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/0e6108a5-66c7-44ea-a374-85889d4dd0f3/NIKE+SB+AIR+FORCE+1+YUTO.png"
+        },
+        {
+          "name": "Nike SB Air Force 1 x Yuto",
+          "listed_price": 125.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 125.0,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/0e6108a5-66c7-44ea-a374-85889d4dd0f3/NIKE+SB+AIR+FORCE+1+YUTO.png"
+        },
+        {
+          "name": "Nike Air Force 1 Low Protro",
+          "listed_price": 150.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 150.0,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/482d3c92-6872-421b-95d8-933b2389cde1/AIR+FORCE+1+LOW+PROTRO.png"
+        },
+        {
+          "name": "Nike Air Force 1 Low Protro",
+          "listed_price": 150.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 150.0,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/482d3c92-6872-421b-95d8-933b2389cde1/AIR+FORCE+1+LOW+PROTRO.png"
+        },
+        {
+          "name": "Nike Air Force 1 Mid By You",
+          "listed_price": 145.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 145.0,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/7ea78bc6-67aa-46c1-8db2-e64747ca17f2/AIR+FORCE+1+MID+ESS+NBY+LEA.png"
+        },
+        {
+          "name": "Nike Air Force 1 Mid By You",
+          "listed_price": 145.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 145.0,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/7ea78bc6-67aa-46c1-8db2-e64747ca17f2/AIR+FORCE+1+MID+ESS+NBY+LEA.png"
+        },
+        {
+          "name": "Nike Air Force 1 Low By You",
+          "listed_price": 140.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 140.0,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/6c612c89-2271-4ed1-b80c-3c2246c69bd7/AIR+FORCE+1+LOW+ESS+NBY+LEA.png"
+        },
+        {
+          "name": "Nike Air Force 1 Low By You",
+          "listed_price": 140.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 140.0,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/6c612c89-2271-4ed1-b80c-3c2246c69bd7/AIR+FORCE+1+LOW+ESS+NBY+LEA.png"
+        },
+        {
+          "name": "Nike Air Force 1 High By You",
+          "listed_price": 155.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 155.0,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/9db253d9-6220-4dd9-b504-308969208397/AIR+FORCE+1+HIGH+ESS+NBY+LEA.png"
+        },
+        {
+          "name": "Nike Air Force 1 High By You",
+          "listed_price": 155.0,
+          "original_price": null,
+          "extra_discount_pct": null,
+          "promo_code": null,
+          "actual_price": 155.0,
+          "image_url": "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/9db253d9-6220-4dd9-b504-308969208397/AIR+FORCE+1+HIGH+ESS+NBY+LEA.png"
+        }
+      ]
     }
   ],
   "levis_501": [
@@ -22527,6 +22922,12 @@
       "type": "no_deal",
       "total_discount_pct": 0,
       "estimated_price": 150.0
+    },
+    {
+      "date": "2026-09-22",
+      "type": "no_deal",
+      "total_discount_pct": 0,
+      "estimated_price": 150.0
     }
   ],
   "levis_505": [
@@ -22854,6 +23255,12 @@
     },
     {
       "date": "2026-09-21",
+      "type": "no_deal",
+      "total_discount_pct": 0,
+      "estimated_price": 150.0
+    },
+    {
+      "date": "2026-09-22",
       "type": "no_deal",
       "total_discount_pct": 0,
       "estimated_price": 150.0
