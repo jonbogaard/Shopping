@@ -24,7 +24,8 @@ async def scrape_nike(page: Page, item: dict) -> dict:
     
     urls = [
         ("main", item["url"]),
-        ("sale", "https://www.nike.com/w/mens-sale-air-force-1-shoes-3yaepz5sj3yznik1zy7ok"),
+        ("sale_af1", "https://www.nike.com/w/mens-sale-air-force-1-shoes-3yaepz5sj3yznik1zy7ok"),
+        ("sale_all", "https://www.nike.com/w/sale-air-force-1-shoes-3yaepznik1zy7ok"),
     ]
     
     all_products = []
