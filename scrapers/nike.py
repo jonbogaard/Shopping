@@ -1,245 +1,227 @@
 """
-Nike scraper — monitors AF1 category page for size 12 availability.
-Computes actual price including visible promo codes (e.g., "Extra 25% w/ DAYONE").
-No login required — promo math is done from displayed info.
+Nike scraper — monitors AF1 category page AND sale page for size 12.
+Checks both pages and merges results to catch clearance items.
+
+Pages checked:
+  1. Main category: /w/mens-air-force-1-shoes-5sj3yznik1zy7ok
+  2. Men's sale:    /w/mens-sale-air-force-1-shoes-3yaepz5sj3yznik1zy7ok
+
+Size filter: Uses aria-label "Filter for M 12 / W 13.5" (men's 12).
+Note: Nike's URL-based size params don't work reliably — must click filter.
 """
-import os
-from typing import Optional
+from typing import Optional, List
 import re
+import json
 from playwright.async_api import Page
 
 
 async def scrape_nike(page: Page, item: dict) -> dict:
     """
-    1. Load the AF1 category page
-    2. Apply size 12 filter
-    3. Scrape all visible products: name, listed price, original price, any promo code
-    4. Compute actual price per shoe (listed price × extra discount)
-    5. Return all AF1s with size 12 available and their true prices
+    Scrape both Nike's main AF1 page and sale page.
+    Merge results, deduplicate, return lowest price.
     """
-    url = item["url"]
     target_size = item.get("size", "12")
-
-    await page.goto(url, wait_until="domcontentloaded", timeout=45000)
-    await page.wait_for_timeout(3000)
-
-    # Dismiss any modals
-    try:
-        dismiss_btns = await page.query_selector_all(
-            'button[data-testid="dialog-close"], '
-            'button[aria-label="Close"], '
-            '[class*="modal"] button[class*="close"]'
-        )
-        for btn in dismiss_btns[:2]:
-            await btn.click()
-            await page.wait_for_timeout(500)
-    except Exception:
-        pass
-
-    # Apply size 12 filter
-    await _apply_size_filter(page, target_size)
-    await page.wait_for_timeout(3000)
-
-    # Check for a site-wide or category-wide promo banner
-    site_promo_pct = await _extract_site_promo(page)
-
-    # Scroll to load more products (Nike uses lazy loading)
-    await _scroll_to_load(page)
-
-    # Scrape all product cards
-    products = await _scrape_product_cards(page, site_promo_pct)
-
-    if not products:
+    
+    urls = [
+        ("main", item["url"]),
+        ("sale", "https://www.nike.com/w/mens-sale-air-force-1-shoes-3yaepz5sj3yznik1zy7ok"),
+    ]
+    
+    all_products = []
+    
+    for label, url in urls:
+        products = await _scrape_nike_page(page, url, target_size, label)
+        all_products.extend(products)
+    
+    if not all_products:
         return {
             "item_id": item["id"],
             "success": False,
-            "error": "No products found after applying size filter",
+            "error": "No AF1 products found on main or sale pages",
             "prices": [],
             "best_price": None,
         }
-
-    best = min(p["actual_price"] for p in products)
+    
+    # Deduplicate by name (keep lowest price if dupes)
+    seen = {}
+    for p in all_products:
+        name = p["name"]
+        if name not in seen or p["actual_price"] < seen[name]["actual_price"]:
+            seen[name] = p
+    
+    unique = sorted(seen.values(), key=lambda x: x["actual_price"])
+    best = unique[0]["actual_price"]
+    
     return {
         "item_id": item["id"],
         "success": True,
-        "prices": products,
+        "prices": unique,
         "best_price": best,
-        "original_price": None,  # Category-level — varies per shoe
-        "note": f"Found {len(products)} AF1 variants in size {target_size}",
+        "original_price": None,
+        "note": f"Found {len(unique)} AF1 variants (size {target_size}), best: ${best:.2f}",
     }
 
 
-async def _apply_size_filter(page: Page, size: str) -> None:
-    """Click the size filter on Nike's category page."""
+async def _scrape_nike_page(page: Page, url: str, target_size: str, label: str) -> list:
+    """Scrape a single Nike page for AF1 products."""
     try:
-        # Nike's filter sidebar — click "Size" to expand, then click the size
-        size_filter = await page.query_selector(
-            'button:has-text("Size"), '
-            '[data-testid*="size-filter"], '
-            'div[class*="filter"] button:has-text("Size")'
+        await page.goto(url, wait_until="domcontentloaded", timeout=30000)
+        await page.wait_for_timeout(4000)
+    except Exception:
+        return []
+    
+    # Dismiss modals
+    try:
+        close_btns = await page.query_selector_all(
+            'button[data-testid="dialog-close"], button[aria-label="Close"]'
         )
-        if size_filter:
-            await size_filter.click()
-            await page.wait_for_timeout(1000)
+        for btn in close_btns[:2]:
+            await btn.click()
+            await page.wait_for_timeout(300)
+    except Exception:
+        pass
+    
+    # Apply size filter via aria-label (correct men's 12)
+    await _apply_size_filter(page, target_size)
+    await page.wait_for_timeout(3000)
+    
+    # Check for site-wide promo
+    site_promo_pct = await _extract_site_promo(page)
+    
+    # Scroll to load lazy products
+    for _ in range(8):
+        await page.evaluate("window.scrollBy(0, 800)")
+        await page.wait_for_timeout(500)
+    await page.wait_for_timeout(2000)
+    
+    # Extract product cards
+    products = await _extract_products(page, site_promo_pct, label)
+    return products
 
-        # Now click the specific size button
-        size_btn = await page.query_selector(
-            f'button:has-text("{size}")[class*="size"], '
-            f'input[value="{size}"] + label, '
-            f'[data-testid*="size"]:has-text("{size}"), '
-            f'label:has-text("{size}")'
-        )
+
+async def _apply_size_filter(page: Page, size: str) -> None:
+    """Click the men's size filter using aria-label for precision."""
+    try:
+        # Open size filter group
+        size_btn = await page.query_selector('button:has-text("Size")')
         if size_btn:
             await size_btn.click()
+            await page.wait_for_timeout(1000)
+        
+        # Click the correct men's size using aria-label
+        # Nike format: "Filter for M {size} / W {size+1.5}"
+        women_size = float(size) + 1.5
+        women_str = f"{women_size:g}"  # Remove trailing .0 if whole number
+        aria_label = f"Filter for M {size} / W {women_str}"
+        
+        size_el = await page.query_selector(f'[aria-label="{aria_label}"]')
+        if size_el:
+            await size_el.scroll_into_view_if_needed()
+            await page.wait_for_timeout(300)
+            await size_el.click(force=True)
             await page.wait_for_timeout(2000)
-        else:
-            # Try a more aggressive approach — find any element with exact "12" text
-            all_size_opts = await page.query_selector_all(
-                '[class*="size"] button, [class*="filter"] label'
-            )
-            for opt in all_size_opts:
-                text = (await opt.inner_text()).strip()
-                if text == size or text == f"M {size}" or text == f"{size} M":
-                    await opt.click()
-                    await page.wait_for_timeout(2000)
-                    break
     except Exception:
-        pass  # If filter fails, we get all sizes — less precise but still useful
+        pass
 
 
 async def _extract_site_promo(page: Page) -> Optional[float]:
-    """
-    Look for a site/category-wide promo like 'Extra 25% w/ DAYONE'.
-    Returns percentage as float (e.g., 25.0).
-    """
-    promo_selectors = [
-        '[class*="promo"], [class*="banner"], [class*="promotion"]',
-        '[data-testid*="promo"]',
-        '.wall-header',
-    ]
-    
-    for sel in promo_selectors:
-        els = await page.query_selector_all(sel)
-        for el in els:
-            try:
-                text = await el.inner_text()
-                match = re.search(
-                    r'(?:extra|additional)\s+(\d+)%\s+(?:off\s+)?(?:w/|with|code)',
-                    text, re.IGNORECASE
-                )
-                if match:
-                    return float(match.group(1))
-            except Exception:
-                continue
+    """Look for a site-wide promo like 'Extra 25% w/ DAYONE'."""
+    try:
+        promo_els = await page.query_selector_all(
+            '[class*="promo"], [class*="banner"], [class*="promotion"]'
+        )
+        for el in promo_els:
+            text = await el.inner_text()
+            match = re.search(
+                r'(?:extra|additional)\s+(\d+)%\s+(?:off\s+)?(?:w/|with|code)',
+                text, re.IGNORECASE
+            )
+            if match:
+                return float(match.group(1))
+    except Exception:
+        pass
     return None
 
 
-async def _scroll_to_load(page: Page, max_scrolls: int = 5) -> None:
-    """Scroll down to trigger lazy loading of product cards."""
-    for _ in range(max_scrolls):
-        await page.evaluate("window.scrollBy(0, window.innerHeight)")
-        await page.wait_for_timeout(1500)
-
-
-async def _scrape_product_cards(page: Page, site_promo_pct: Optional[float]) -> list:
-    """Scrape all visible product cards and compute actual prices."""
+async def _extract_products(page: Page, site_promo_pct: Optional[float], source_label: str) -> list:
+    """Extract product cards using JavaScript for reliability."""
+    js_code = """
+        () => {
+            const results = [];
+            const seen = new Set();
+            const cards = document.querySelectorAll('[class*="product-card"]');
+            
+            cards.forEach(card => {
+                const texts = card.innerText.split('\\n').map(t => t.trim()).filter(t => t.length > 0);
+                const priceLines = texts.filter(t => t.startsWith('$'));
+                const nameLines = texts.filter(t => {
+                    return t.length > 5 
+                        && !t.startsWith('$') 
+                        && !t.match(/^\\d+ Colo/)
+                        && !t.match(/^\\d+% off/)
+                        && !t.match(/^(Best Seller|Just In|See Price|Customize|Available|Launching|Recycled)/)
+                });
+                
+                if (priceLines.length > 0 && nameLines.length > 0) {
+                    const name = nameLines[0];
+                    const currentPrice = parseFloat(priceLines[0].replace('$', ''));
+                    const originalPrice = priceLines.length > 1 ? parseFloat(priceLines[1].replace('$', '')) : null;
+                    const link = card.querySelector('a');
+                    const href = link ? link.getAttribute('href') : '';
+                    
+                    // Check for per-product promo text
+                    const promoLine = texts.find(t => t.match(/extra.*\\d+%.*(?:w\\/|with|code)/i));
+                    
+                    if (!seen.has(name) && currentPrice > 0) {
+                        seen.add(name);
+                        results.push({
+                            name: name,
+                            listed_price: currentPrice,
+                            original_price: originalPrice,
+                            promo_text: promoLine || null,
+                            href: href
+                        });
+                    }
+                }
+            });
+            
+            return results;
+        }
+    """
+    
+    try:
+        raw_products = await page.evaluate(js_code)
+    except Exception:
+        return []
+    
     products = []
-
-    # Nike product card selectors
-    cards = await page.query_selector_all(
-        '[data-testid*="product-card"], '
-        '.product-card, '
-        '[class*="product-grid"] > div, '
-        '[class*="product-card"]'
-    )
-
-    for card in cards:
-        try:
-            # Product name
-            name_el = await card.query_selector(
-                '[class*="product-name"], '
-                '[class*="product-title"], '
-                'a[class*="product"]'
+    for p in raw_products:
+        name = p["name"]
+        listed_price = p["listed_price"]
+        original_price = p.get("original_price")
+        
+        # Parse per-product promo
+        product_promo_pct = None
+        promo_code = None
+        if p.get("promo_text"):
+            match = re.search(
+                r'(?:extra|additional)?\s*(\d+)%\s+(?:off\s+)?(?:w/|with)\s+(\w+)',
+                p["promo_text"], re.IGNORECASE
             )
-            name = await name_el.inner_text() if name_el else "Unknown"
-            name = name.strip()
-
-            # Skip non-AF1 products (shouldn't appear but safety check)
-            if "air force" not in name.lower() and "af1" not in name.lower():
-                continue
-
-            # Current/sale price
-            price_el = await card.query_selector(
-                '[data-testid*="currentPrice"], '
-                '[class*="current-price"], '
-                '[class*="product-price"] [class*="current"], '
-                '[class*="is--current-price"]'
-            )
-            if not price_el:
-                price_el = await card.query_selector('[class*="price"]')
-
-            if not price_el:
-                continue
-
-            price_text = await price_el.inner_text()
-            price_match = re.search(r'\$([\d,]+\.?\d*)', price_text)
-            if not price_match:
-                continue
-            listed_price = float(price_match.group(1).replace(',', ''))
-
-            # Original price (strikethrough)
-            orig_el = await card.query_selector(
-                '[data-testid*="originalPrice"], '
-                '[class*="original-price"], '
-                '[class*="is--striked"], '
-                'del, s'
-            )
-            original_price = None
-            if orig_el:
-                orig_text = await orig_el.inner_text()
-                orig_match = re.search(r'\$([\d,]+\.?\d*)', orig_text)
-                if orig_match:
-                    original_price = float(orig_match.group(1).replace(',', ''))
-
-            # Per-product promo text (e.g., "Extra 25% w/ DAYONE")
-            promo_el = await card.query_selector(
-                '[class*="promo"], [class*="message"], [class*="subtitle"]'
-            )
-            product_promo_pct = None
-            promo_code = None
-            if promo_el:
-                promo_text = await promo_el.inner_text()
-                promo_match = re.search(
-                    r'(?:extra|additional)?\s*(\d+)%\s+(?:off\s+)?(?:w/|with)\s+(\w+)',
-                    promo_text, re.IGNORECASE
-                )
-                if promo_match:
-                    product_promo_pct = float(promo_match.group(1))
-                    promo_code = promo_match.group(2)
-
-            # Compute actual price
-            extra_discount = product_promo_pct or site_promo_pct
-            if extra_discount:
-                actual_price = round(listed_price * (1 - extra_discount / 100), 2)
-            else:
-                actual_price = listed_price
-
-            # Product image URL
-            image_url = None
-            img_el = await card.query_selector(
-                'img[class*="product"], '
-                'img[data-testid*="product"], '
-                'img[class*="card-img"], '
-                'img[src*="nike.com/a/images"]'
-            )
-            if img_el:
-                image_url = await img_el.get_attribute("src")
-                # Handle srcset — take the first URL if src is empty
-                if not image_url:
-                    srcset = await img_el.get_attribute("srcset")
-                    if srcset:
-                        image_url = srcset.split(",")[0].strip().split(" ")[0]
-
+            if match:
+                product_promo_pct = float(match.group(1))
+                promo_code = match.group(2)
+        
+        # Compute actual price
+        extra_discount = product_promo_pct or site_promo_pct
+        if extra_discount:
+            actual_price = round(listed_price * (1 - extra_discount / 100), 2)
+        else:
+            actual_price = listed_price
+        
+        # Only include AF1-related products (filter out non-AF1 results on sale page)
+        name_lower = name.lower()
+        if "air force" in name_lower or "af1" in name_lower or "force 1" in name_lower:
             products.append({
                 "name": name,
                 "listed_price": listed_price,
@@ -247,10 +229,7 @@ async def _scrape_product_cards(page: Page, site_promo_pct: Optional[float]) -> 
                 "extra_discount_pct": extra_discount,
                 "promo_code": promo_code,
                 "actual_price": actual_price,
-                "image_url": image_url,
+                "source": source_label,
             })
-
-        except Exception:
-            continue
-
+    
     return products
