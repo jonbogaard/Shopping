@@ -79,6 +79,13 @@ async def scrape_nike(page: Page, item: dict) -> dict:
     api_products.sort(key=lambda x: x["actual_price"])
     best = api_products[0]["actual_price"]
 
+    # Grab product image for the cheapest shoe (one extra page load)
+    cheapest = api_products[0]
+    if cheapest.get("style_color") and not cheapest.get("image_url"):
+        img_url = await _get_product_image(page, cheapest["style_color"])
+        if img_url:
+            cheapest["image_url"] = img_url
+
     return {
         "item_id": item["id"],
         "success": True,
@@ -188,6 +195,48 @@ async def _get_product_from_api(page: Page, style_color: str, target_size: str) 
         pass
 
     return None
+
+
+async def _get_product_image(page: Page, style_color: str) -> Optional[str]:
+    """Load a product page and grab a clean product image URL."""
+    try:
+        await page.goto(
+            f"https://www.nike.com/t/x/{style_color}",
+            wait_until="domcontentloaded", timeout=10000
+        )
+        await page.wait_for_timeout(2000)
+
+        # Get any product image from the page
+        img_url = await page.evaluate("""
+            () => {
+                // Try hero image
+                const heroImg = document.querySelector('[data-testid="HeroImg"] img, [class*="hero"] img');
+                if (heroImg && heroImg.src) return heroImg.src;
+                // Try PDP images
+                const imgs = document.querySelectorAll('img');
+                for (const img of imgs) {
+                    if (img.src && img.src.includes('static.nike.com')) return img.src;
+                }
+                // Fallback: og:image
+                const meta = document.querySelector('meta[property="og:image"]');
+                return meta ? meta.getAttribute('content') : null;
+            }
+        """)
+
+        if not img_url:
+            return None
+
+        # Clean up Nike's layered image URL to get a direct product image
+        # Layered URLs have: u_xxx,c_scale,...,fl_layer_apply/{uuid}/name.png
+        # Clean URL: https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/{uuid}/image.png
+        match = re.search(r'fl_layer_apply/([a-f0-9-]+)/', img_url)
+        if match:
+            uuid = match.group(1)
+            return f"https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/{uuid}/image.png"
+
+        return img_url
+    except Exception:
+        return None
 
 
 async def _scrape_page_products(page: Page, url: str, target_size: str) -> list:
