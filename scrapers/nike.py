@@ -1,13 +1,19 @@
 """
-Nike scraper — monitors AF1 category page AND sale page for size 12.
-Checks both pages and merges results to catch clearance items.
+Nike scraper — hybrid approach:
+1. Scrape sale pages to get AF1 style-color codes
+2. Query Nike's product feed API for each to get TRUE prices + size availability
 
-Pages checked:
-  1. Main category: /w/mens-air-force-1-shoes-5sj3yznik1zy7ok
-  2. Men's sale:    /w/mens-sale-air-force-1-shoes-3yaepz5sj3yznik1zy7ok
+API endpoint:
+  https://api.nike.com/product_feed/threads/v3/
+  ?filter=marketplace(US)&filter=language(en)
+  &filter=channelId(d9a5bc42-4b9c-4976-858a-f159cf99c647)
+  &filter=productInfo.merchProduct.styleColor({STYLE_COLOR})
 
-Size filter: Uses aria-label "Filter for M 12 / W 13.5" (men's 12).
-Note: Nike's URL-based size params don't work reliably — must click filter.
+Key API quirks:
+  - genders field is uppercase: "MEN" not "Men"
+  - availableSkus is often empty; check skus list instead
+  - sizes are plain numbers: "12" not "M 12"
+  - Only queries sale-page items to keep runtime under 2 minutes
 """
 from typing import Optional, List
 import re
@@ -15,222 +21,234 @@ import json
 from playwright.async_api import Page
 
 
+# Nike's product feed API base
+API_BASE = (
+    "https://api.nike.com/product_feed/threads/v3/"
+    "?filter=marketplace(US)"
+    "&filter=language(en)"
+    "&filter=channelId(d9a5bc42-4b9c-4976-858a-f159cf99c647)"
+    "&filter=productInfo.merchProduct.styleColor({})"
+)
+
+
 async def scrape_nike(page: Page, item: dict) -> dict:
     """
-    Scrape both Nike's main AF1 page and sale page.
-    Merge results, deduplicate, return lowest price.
+    1. Collect style-color codes from sale pages
+    2. Query Nike API for each to get real price + size 12 availability
+    3. Also scrape main category page for non-sale items (with page prices)
     """
     target_size = item.get("size", "12")
-    
-    urls = [
-        ("main", item["url"]),
-        ("sale_af1", "https://www.nike.com/w/mens-sale-air-force-1-shoes-3yaepz5sj3yznik1zy7ok"),
-        ("sale_all", "https://www.nike.com/w/sale-air-force-1-shoes-3yaepznik1zy7ok"),
+
+    # Step 1: Get style-colors from SALE pages (these are discounted)
+    sale_urls = [
+        "https://www.nike.com/w/mens-sale-air-force-1-shoes-3yaepz5sj3yznik1zy7ok",
+        "https://www.nike.com/w/sale-air-force-1-shoes-3yaepznik1zy7ok",
     ]
-    
-    all_products = []
-    
-    for label, url in urls:
-        products = await _scrape_nike_page(page, url, target_size, label)
-        all_products.extend(products)
-    
-    if not all_products:
+
+    sale_styles = set()
+    for url in sale_urls:
+        codes = await _get_style_colors_from_page(page, url)
+        sale_styles.update(codes)
+
+    # Step 2: Query API for each sale item
+    api_products = []
+    for style in sale_styles:
+        product = await _get_product_from_api(page, style, target_size)
+        if product:
+            api_products.append(product)
+
+    # Step 3: Also get main page products (page-scraped prices for non-sale items)
+    main_products = await _scrape_page_products(page, item["url"], target_size)
+
+    # Merge: API products take priority (more accurate), then page products
+    seen_names = {p["name"] for p in api_products}
+    for mp in main_products:
+        if mp["name"] not in seen_names:
+            api_products.append(mp)
+            seen_names.add(mp["name"])
+
+    if not api_products:
         return {
             "item_id": item["id"],
             "success": False,
-            "error": "No AF1 products found on main or sale pages",
+            "error": f"No AF1 products found ({len(sale_styles)} sale styles checked)",
             "prices": [],
             "best_price": None,
         }
-    
-    # Deduplicate by name (keep lowest price if dupes)
-    seen = {}
-    for p in all_products:
-        name = p["name"]
-        if name not in seen or p["actual_price"] < seen[name]["actual_price"]:
-            seen[name] = p
-    
-    unique = sorted(seen.values(), key=lambda x: x["actual_price"])
-    best = unique[0]["actual_price"]
-    
+
+    api_products.sort(key=lambda x: x["actual_price"])
+    best = api_products[0]["actual_price"]
+
     return {
         "item_id": item["id"],
         "success": True,
-        "prices": unique,
+        "prices": api_products,
         "best_price": best,
         "original_price": None,
-        "note": f"Found {len(unique)} AF1 variants (size {target_size}), best: ${best:.2f}",
+        "note": f"Found {len(api_products)} AF1 variants (size {target_size}), best: ${best:.2f}",
     }
 
 
-async def _scrape_nike_page(page: Page, url: str, target_size: str, label: str) -> list:
-    """Scrape a single Nike page for AF1 products."""
+async def _get_style_colors_from_page(page: Page, url: str) -> set:
+    """Load a Nike page and extract style-color codes from product links."""
     try:
         await page.goto(url, wait_until="domcontentloaded", timeout=30000)
         await page.wait_for_timeout(4000)
-    except Exception:
-        return []
-    
-    # Dismiss modals
-    try:
-        close_btns = await page.query_selector_all(
-            'button[data-testid="dialog-close"], button[aria-label="Close"]'
-        )
-        for btn in close_btns[:2]:
-            await btn.click()
-            await page.wait_for_timeout(300)
-    except Exception:
-        pass
-    
-    # Apply size filter via aria-label (correct men's 12)
-    await _apply_size_filter(page, target_size)
-    await page.wait_for_timeout(3000)
-    
-    # Check for site-wide promo
-    site_promo_pct = await _extract_site_promo(page)
-    
-    # Scroll to load lazy products
-    for _ in range(8):
-        await page.evaluate("window.scrollBy(0, 800)")
-        await page.wait_for_timeout(500)
-    await page.wait_for_timeout(2000)
-    
-    # Extract product cards
-    products = await _extract_products(page, site_promo_pct, label)
-    return products
+        for _ in range(10):
+            await page.evaluate("window.scrollBy(0, 800)")
+            await page.wait_for_timeout(400)
+        await page.wait_for_timeout(1000)
 
+        links = await page.evaluate("""
+            () => {
+                const hrefs = new Set();
+                document.querySelectorAll('a[href*="/t/"]').forEach(a => hrefs.add(a.getAttribute('href')));
+                return Array.from(hrefs);
+            }
+        """)
 
-async def _apply_size_filter(page: Page, size: str) -> None:
-    """Click the men's size filter using aria-label for precision."""
-    try:
-        # Open size filter group
-        size_btn = await page.query_selector('button:has-text("Size")')
-        if size_btn:
-            await size_btn.click()
-            await page.wait_for_timeout(1000)
-        
-        # Click the correct men's size using aria-label
-        # Nike format: "Filter for M {size} / W {size+1.5}"
-        women_size = float(size) + 1.5
-        women_str = f"{women_size:g}"  # Remove trailing .0 if whole number
-        aria_label = f"Filter for M {size} / W {women_str}"
-        
-        size_el = await page.query_selector(f'[aria-label="{aria_label}"]')
-        if size_el:
-            await size_el.scroll_into_view_if_needed()
-            await page.wait_for_timeout(300)
-            await size_el.click(force=True)
-            await page.wait_for_timeout(2000)
-    except Exception:
-        pass
-
-
-async def _extract_site_promo(page: Page) -> Optional[float]:
-    """Look for a site-wide promo like 'Extra 25% w/ DAYONE'."""
-    try:
-        promo_els = await page.query_selector_all(
-            '[class*="promo"], [class*="banner"], [class*="promotion"]'
-        )
-        for el in promo_els:
-            text = await el.inner_text()
-            match = re.search(
-                r'(?:extra|additional)\s+(\d+)%\s+(?:off\s+)?(?:w/|with|code)',
-                text, re.IGNORECASE
-            )
+        codes = set()
+        for link in links:
+            match = re.search(r'/([A-Z]{2}\d+-\d+)$', link)
             if match:
-                return float(match.group(1))
+                codes.add(match.group(1))
+        return codes
+    except Exception:
+        return set()
+
+
+async def _get_product_from_api(page: Page, style_color: str, target_size: str) -> Optional[dict]:
+    """Query Nike product API for a specific style-color."""
+    api_url = API_BASE.format(style_color)
+
+    try:
+        resp = await page.goto(api_url, wait_until="domcontentloaded", timeout=8000)
+        if not resp or resp.status != 200:
+            return None
+
+        body = await page.inner_text("body")
+        data = json.loads(body)
+
+        for obj in data.get("objects", []):
+            title = obj.get("publishedContent", {}).get("properties", {}).get("title", "")
+
+            for pi in obj.get("productInfo", []):
+                merch = pi.get("merchProduct", {})
+                price_info = pi.get("merchPrice", {})
+
+                # Filter: men's footwear (API uses uppercase "MEN")
+                genders = [g.upper() for g in merch.get("genders", [])]
+                if "MEN" not in genders:
+                    continue
+                if merch.get("productType", "") != "FOOTWEAR":
+                    continue
+
+                # Filter: must be AF1
+                name_check = (title + " " + merch.get("labelName", "")).lower()
+                if not any(t in name_check for t in ["air force", "af1", "force 1"]):
+                    continue
+
+                current_price = price_info.get("currentPrice")
+                full_price = price_info.get("fullPrice")
+                discounted = price_info.get("discounted", False)
+
+                if not current_price:
+                    continue
+
+                # Check size availability (plain numbers like "12")
+                has_size = False
+                # Check skus first (availableSkus is often empty)
+                for sku in pi.get("skus", []):
+                    if str(sku.get("nikeSize", "")) == str(target_size):
+                        has_size = True
+                        break
+                # Also check availableSkus if present
+                if not has_size:
+                    for sku in pi.get("availableSkus", []):
+                        if str(sku.get("nikeSize", "")) == str(target_size):
+                            has_size = True
+                            break
+
+                if not has_size:
+                    continue
+
+                return {
+                    "name": title,
+                    "style_color": style_color,
+                    "listed_price": current_price,
+                    "original_price": full_price,
+                    "actual_price": current_price,
+                    "extra_discount_pct": None,
+                    "promo_code": None,
+                    "discounted": discounted,
+                    "source": "api",
+                    "image_url": None,
+                }
     except Exception:
         pass
+
     return None
 
 
-async def _extract_products(page: Page, site_promo_pct: Optional[float], source_label: str) -> list:
-    """Extract product cards using JavaScript for reliability."""
-    js_code = """
-        () => {
-            const results = [];
-            const seen = new Set();
-            const cards = document.querySelectorAll('[class*="product-card"]');
-            
-            cards.forEach(card => {
-                const texts = card.innerText.split('\\n').map(t => t.trim()).filter(t => t.length > 0);
-                const priceLines = texts.filter(t => t.startsWith('$'));
-                const nameLines = texts.filter(t => {
-                    return t.length > 5 
-                        && !t.startsWith('$') 
-                        && !t.match(/^\\d+ Colo/)
-                        && !t.match(/^\\d+% off/)
-                        && !t.match(/^(Best Seller|Just In|See Price|Customize|Available|Launching|Recycled)/)
-                });
-                
-                if (priceLines.length > 0 && nameLines.length > 0) {
-                    const name = nameLines[0];
-                    const currentPrice = parseFloat(priceLines[0].replace('$', ''));
-                    const originalPrice = priceLines.length > 1 ? parseFloat(priceLines[1].replace('$', '')) : null;
-                    const link = card.querySelector('a');
-                    const href = link ? link.getAttribute('href') : '';
-                    
-                    // Check for per-product promo text
-                    const promoLine = texts.find(t => t.match(/extra.*\\d+%.*(?:w\\/|with|code)/i));
-                    
-                    if (!seen.has(name) && currentPrice > 0) {
-                        seen.add(name);
-                        results.push({
-                            name: name,
-                            listed_price: currentPrice,
-                            original_price: originalPrice,
-                            promo_text: promoLine || null,
-                            href: href
-                        });
-                    }
-                }
-            });
-            
-            return results;
-        }
-    """
-    
+async def _scrape_page_products(page: Page, url: str, target_size: str) -> list:
+    """Fallback: scrape main category page for non-sale products."""
     try:
-        raw_products = await page.evaluate(js_code)
+        await page.goto(url, wait_until="domcontentloaded", timeout=30000)
+        await page.wait_for_timeout(4000)
+        for _ in range(8):
+            await page.evaluate("window.scrollBy(0, 800)")
+            await page.wait_for_timeout(400)
+        await page.wait_for_timeout(1000)
+
+        js_code = """
+            () => {
+                const results = [];
+                const seen = new Set();
+                const cards = document.querySelectorAll('[class*="product-card"]');
+                cards.forEach(card => {
+                    const texts = card.innerText.split('\\n').map(t => t.trim()).filter(t => t.length > 0);
+                    const priceLines = texts.filter(t => t.startsWith('$'));
+                    const nameLines = texts.filter(t => {
+                        return t.length > 5
+                            && !t.startsWith('$')
+                            && !t.match(/^\\d+ Colo/)
+                            && !t.match(/^\\d+% off/)
+                            && !t.match(/^(Best Seller|Just In|See Price|Customize|Available|Launching|Recycled)/)
+                    });
+                    if (priceLines.length > 0 && nameLines.length > 0) {
+                        const name = nameLines[0];
+                        const price = parseFloat(priceLines[0].replace('$', ''));
+                        const orig = priceLines.length > 1 ? parseFloat(priceLines[1].replace('$', '')) : null;
+                        if (!seen.has(name) && price > 0) {
+                            seen.add(name);
+                            results.push({name, price, orig});
+                        }
+                    }
+                });
+                return results;
+            }
+        """
+
+        raw = await page.evaluate(js_code)
+        products = []
+        for p in raw:
+            name_lower = p["name"].lower()
+            if "gift" in name_lower or "card" in name_lower:
+                continue
+            if not any(t in name_lower for t in ["air force", "af1", "force 1"]):
+                continue
+            products.append({
+                "name": p["name"],
+                "style_color": "",
+                "listed_price": p["price"],
+                "original_price": p.get("orig"),
+                "actual_price": p["price"],
+                "extra_discount_pct": None,
+                "promo_code": None,
+                "discounted": p.get("orig") is not None and p["price"] < p["orig"],
+                "source": "page",
+                "image_url": None,
+            })
+        return products
     except Exception:
         return []
-    
-    products = []
-    for p in raw_products:
-        name = p["name"]
-        listed_price = p["listed_price"]
-        original_price = p.get("original_price")
-        
-        # Parse per-product promo
-        product_promo_pct = None
-        promo_code = None
-        if p.get("promo_text"):
-            match = re.search(
-                r'(?:extra|additional)?\s*(\d+)%\s+(?:off\s+)?(?:w/|with)\s+(\w+)',
-                p["promo_text"], re.IGNORECASE
-            )
-            if match:
-                product_promo_pct = float(match.group(1))
-                promo_code = match.group(2)
-        
-        # Compute actual price
-        extra_discount = product_promo_pct or site_promo_pct
-        if extra_discount:
-            actual_price = round(listed_price * (1 - extra_discount / 100), 2)
-        else:
-            actual_price = listed_price
-        
-        # Only include AF1-related products (filter out non-AF1 results on sale page)
-        name_lower = name.lower()
-        if "air force" in name_lower or "af1" in name_lower or "force 1" in name_lower:
-            products.append({
-                "name": name,
-                "listed_price": listed_price,
-                "original_price": original_price,
-                "extra_discount_pct": extra_discount,
-                "promo_code": promo_code,
-                "actual_price": actual_price,
-                "source": source_label,
-            })
-    
-    return products
