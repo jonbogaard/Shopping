@@ -1,8 +1,1 @@
-{
-  "uniqlo_airism_1": {
-    "first_failure": "2026-10-08",
-    "consecutive_days": 1,
-    "last_error": "No items returned from Uniqlo API",
-    "alerted": false
-  }
-}
+{}
