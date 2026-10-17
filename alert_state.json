@@ -1,15 +1,9 @@
 {
   "levis_last_alert": "2026-10-11",
-  "uniqlo_airism_1": {
-    "last_alert_date": "2026-10-14",
-    "last_tier": "BUY_NOW",
-    "first_alert_date": "2026-09-15",
-    "alert_count": 10
-  },
   "nike_af1": {
-    "last_alert_date": "2026-10-14",
+    "last_alert_date": "2026-10-17",
     "last_tier": "WORTH_A_LOOK",
     "first_alert_date": "2026-09-29",
-    "alert_count": 6
+    "alert_count": 7
   }
 }
